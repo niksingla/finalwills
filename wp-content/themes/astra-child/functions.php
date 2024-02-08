@@ -15,9 +15,34 @@ function my_theme_enqueue_styles() {
 }
 
 function test_script(){
+	$order = wc_get_order(435);
+	if($order){
+		$items = $order->get_items();
+		foreach ($items as $item_id => $item) {     
+			$product_id = $item->get_product_id();
+		}
+		$product = wc_get_product($product_id);
+		$duration = $product->get_attribute('duration');
+		$user_id = get_current_user_id(); 
+		$currentExpiry = date(get_user_meta($user_id,'acc_expires_on',true));
+		$ogDateTime = DateTime::createFromFormat(EXP_DATE_FORMAT, $currentExpiry);
+		$modifiedDateTime = $ogDateTime->modify('+3 years');
+
+		$new_expiration_date = $modifiedDateTime->format(EXP_DATE_FORMAT);
+		// if(date(EXP_DATE_FORMAT,time())>$currentExpiry){
+		// 	$new_expiration_date = date(EXP_DATE_FORMAT, strtotime("+{$duration} years"));
+		// }else{
+		// 	$ogDateTime = DateTime::createFromFormat(EXP_DATE_FORMAT, $currentExpiry);
+		// 	$modifiedDateTime = $ogDateTime->modify('+3 years');
+
+		// 	$new_expiration_date = $modifiedDateTime->format(EXP_DATE_FORMAT);
+		// }
+	}
 	?>
-	<script>console.log(<?php echo json_encode(get_post(get_the_ID())) ?>)</script>
+	<script>console.log("<?php echo $new_expiration_date; ?>")</script>
 	<?php
 }
-add_action('wp_footer','test_script');
+// add_action('wp_footer','test_script');
+
+
 

@@ -17,7 +17,8 @@ if(is_user_logged_in()){
     $userdata = get_userdata($user_id);
     $user_meta = get_user_meta( $user_id);
     $date_display_format = "F d, Y";
-    $isMemberExpired = date(EXP_DATE_FORMAT,time()) > $user_meta['acc_created_on'][0];
+    echo $user_meta['expiration_date'][0];
+    $isMemberExpired = date(EXP_DATE_FORMAT,time()) > $user_meta['acc_expires_on'][0];
     
     // echo '<pre>';
     // print_r($user_meta);
@@ -36,12 +37,28 @@ if(is_user_logged_in()){
             <?php
             }else{ ?> <p>Membership Expired: <span><?php echo date($date_display_format, strtotime($user_meta['acc_expires_on'][0])) ?></span></p> <?php } ?>
         </div>
+        
         <div class="extend-memberships-btns">
-            <a class="btn btn-dark extend-plan" href="#">Add 1 year ($16)</a>
-            <a class="btn btn-dark extend-plan" href="#">Add 1 year ($16)</a>
-            <a class="btn btn-dark extend-plan" href="#">Add 1 year ($16)</a>
-            <a class="btn btn-dark extend-plan" href="#">Add 1 year ($16)</a>
-            <a class="btn btn-dark extend-plan" href="#">Add 1 year ($16)</a>            
+            <?php
+            $args = array(
+                'post_type'      => 'product',
+                'posts_per_page' => -1,
+                'order' => 'ASC',
+            );
+            $products_query = new WP_Query( $args );
+            if ( $products_query->have_posts() ) {
+                while ( $products_query->have_posts() ) {
+                    $products_query->the_post();
+                    $product_id           = get_the_ID();                    
+                    $product_price        = get_post_meta( $product_id, '_price', true );
+                    $product_short_desc   = get_the_excerpt($product_id)
+                    ?>
+                    <a class="btn btn-dark extend-plan" data-id="<?= $product_id ?>" data-price="<?= $product_price ?>" href="<?= get_the_permalink($product_id)?>"><?= $product_short_desc; ?></a>                    
+                    <?php             
+                }
+                wp_reset_postdata();
+            }
+            ?>                      
         </div>
         <?php if(!$isMemberExpired){ ?>
         <div class="try-buy-service-wrapper">

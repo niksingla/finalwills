@@ -16,10 +16,15 @@ if(is_user_logged_in()){
     $user_id = get_current_user_id(); 
     $userdata = get_userdata($user_id);
     $user_meta = get_user_meta( $user_id);
-    $date_display_format = "F d, Y";
-    echo $user_meta['expiration_date'][0];
-    $isMemberExpired = date(EXP_DATE_FORMAT,time()) > $user_meta['acc_expires_on'][0];
-    
+    $date_display_format = "F d, Y";    
+    $createdDate = $user_meta['acc_created_on'] !='' ?$user_meta['acc_created_on']:date(EXP_DATE_FORMAT,strtotime("yesterday"));
+    $dateObject =  DateTime::createFromFormat(EXP_DATE_FORMAT, $createdDate);
+
+    $creationDate = $dateObject->format($date_display_format);
+    $dateObject = DateTime::createFromFormat(EXP_DATE_FORMAT, $user_meta['acc_expires_on'][0]);
+    $expiryDate = $dateObject->format($date_display_format);
+    $isMemberExpired = $expiryDate < date($date_display_format,time());  
+    // echo $isMemberExpired;
     // echo '<pre>';
     // print_r($user_meta);
     // echo '</pre>';    
@@ -31,11 +36,11 @@ if(is_user_logged_in()){
             <a class="btn btn-info logout-btn" href="<?= site_url('logout')?>">Logout</a>
         </div>    
         <div class="membership-section">
-            <p>Member since: <span><?= date($date_display_format,strtotime($user_meta['acc_created_on'][0]) ) ?></span></p>
+            <p>Member since: <span><?= $creationDate ?></span></p>
             <?php
-            if(!$isMemberExpired){ ?> <p>Membership Expires: <span><?php echo date($date_display_format, strtotime($user_meta['acc_expires_on'][0])) ?></span></p>
+            if(!$isMemberExpired){ ?> <p>Membership Expires: <span><?= $expiryDate ?></span></p>
             <?php
-            }else{ ?> <p>Membership Expired: <span><?php echo date($date_display_format, strtotime($user_meta['acc_expires_on'][0])) ?></span></p> <?php } ?>
+            }else{ ?> <p>Membership Expired: <span><?= $expiryDate ?></span></p> <?php } ?>
         </div>
         
         <div class="extend-memberships-btns">
@@ -61,14 +66,16 @@ if(is_user_logged_in()){
             ?>                      
         </div>
         <?php if(!$isMemberExpired){ ?>
-        <div class="try-buy-service-wrapper">
-            <h3>Last Will and Testament</h3>
-            <p>Create a perfect, lawyer-approved legal Will from the comfort of your home.</p>
-            <div class="try-buy-btns row">
-            <a class="btn btn-dark extend-plan col" href="#">TRY</a>
-            <a class="btn btn-dark extend-plan col" href="#">BUY ($39.95)</a>
+            <div class="container p-0 try-buy-service-wrapper">
+                <div>
+                    <h3>Last Will and Testament</h3>
+                    <p>Create a perfect, lawyer-approved legal Will from the comfort of your home.</p>
+                    <div class="try-buy-btns">
+                    <a class="btn btn-dark extend-plan px-3" href="/will-testament/">TRY</a>
+                    <a class="btn btn-dark extend-plan px-3" href="#">BUY ($39.95)</a>
+                    </div>
+                </div>                
             </div>
-        </div>
         <?php } else {?>
             <h2>There is no active membership.</h2>
         <?php } ?>

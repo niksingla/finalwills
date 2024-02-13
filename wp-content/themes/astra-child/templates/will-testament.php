@@ -12,6 +12,11 @@ add_action('wp_head', function () {
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <script>
+      tailwind.config = {
+        important: true,
+      }
+    </script>
     HTML;
 
     echo $html;
@@ -97,7 +102,7 @@ if (is_user_logged_in()) {
                     <div>
                         <ul>
 
-                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max" @click="openPage('sec-1')">
+                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max" @click="openPage('sec1')">
                                 Section 1: Introduction <span class="text-red-600">START HERE</span>
                             </li>
                             <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max">
@@ -165,7 +170,7 @@ if (is_user_logged_in()) {
                                     </template>
                                 </div>
                             </div>
-                            <div x-show="activeForm === 'sec-1'">
+                            <div x-show="activeForm === 'sec1'">
                                 <p>Introduction</p>
                                 <i class="font-bold">We've made this easy! This should only take a short amount of your time...</i>
                                 <p>You will be asked a series of questions to help you create your Last Will and Testament.</p>
@@ -180,72 +185,83 @@ if (is_user_logged_in()) {
 
                                 <p>To begin stepping through these questions, click on the "NEXT" button which appears below...</p>
                             </div>
-                            <div x-show="activeForm === 'sec-2'">
+                            <div x-show="activeForm === 'sec2'">
                                 <p>Personal Details</p>
                                 <p>
                                     It is important that you provide the information below so that the MyWill™ wizard can format a document that is custom-made based on your name, gender and local jurisdiction.
                                 </p>
 
-                                <p>* = required information</p>
+                                <p><span class="text-red-500">*</span> = required information</p>
                                 <div>
                                     <div>
                                         <p></p>
                                         <div>
 
                                         </div>
-                                        <div class="horizontalform">
+                                        <div>
                                             <div>
-                                                <label for="ctl00_ctl00_MainContent_WizardContent_txtPrefix">Prefix (eg. Mr., Ms., Dr.)<span class="redtext">*</span></label>
-                                                <input type="text" value="" id="ctl00_ctl00_MainContent_WizardContent_txtPrefix" class="form-control">
+                                                <label for="prefix">Prefix (eg. Mr., Ms., Dr.)<span class="text-red-500">*</span></label>
+                                                <input x-model="formData.sec2.prefix" type="text" id="prefix" value="" @input="validate('prefix')" :class="{'border-red-500': validateError.prefix}">
+                                                <small x-text="validateError.prefix" class="text-red-500 block"></small>
                                             </div>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-6 col-xl-4">
                                                 <div>
-                                                    <label for="ctl00_ctl00_MainContent_WizardContent_txtFirstName">First Name<span class="redtext">*</span></label>
-                                                    <input type="text" value="" id="ctl00_ctl00_MainContent_WizardContent_txtFirstName" class="form-control">
+                                                    <label for="firstName">First Name<span class="text-red-500">*</span></label>
+                                                    <input x-model="formData.sec2.firstName" type="text" value="" id="firstName" @input="validate('firstName')" :class="{'border-red-500': validateError.firstName}">
+                                                    <small x-text="validateError.firstName" class="text-red-500 block"></small>
+
                                                 </div>
                                             </div>
                                             <div class="col-md-6 col-xl-4">
                                                 <div>
-                                                    <label for="ctl00_ctl00_MainContent_WizardContent_txtMiddleName">Middle Name</label>
-                                                    <input type="text" value="" id="ctl00_ctl00_MainContent_WizardContent_txtMiddleName" class="form-control">
+                                                    <label for="middleName">Middle Name</label>
+                                                    <input x-model="formData.sec2.middleName" type="text" value="" id="middleName" @input="validate('middleName')" :class="{'border-red-500': validateError.middleName}">
+                                                    <small x-text="validateError.middleName" class="text-red-500 block"></small>
+
                                                 </div>
                                             </div>
                                             <div class="col-md-6 col-xl-4">
                                                 <div>
-                                                    <label for="ctl00_ctl00_MainContent_WizardContent_txtLastName">Last Name/Surname<span class="redtext">*</span></label>
-                                                    <input type="text" value="" id="ctl00_ctl00_MainContent_WizardContent_txtLastName" class="form-control">
+                                                    <label for="lastName">Last Name/Surname<span class="text-red-500">*</span></label>
+                                                    <input x-model="formData.sec2.lastName" type="text" value="" id="lastName" @input="validate('lastName')" :class="{'border-red-500': validateError.lastName}">
+                                                    <small x-text="validateError.lastName" class="text-red-500 block"></small>
+
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-6 col-xl-4">
                                                 <div>
-                                                    <label for="ctl00_ctl00_MainContent_WizardContent_txtSuffix">Suffix (eg. Jr., Sr.)</label>
-                                                    <input type="text" value="" id="ctl00_ctl00_MainContent_WizardContent_txtSuffix" class="form-control">
+                                                    <label for="suffix">Suffix (eg. Jr., Sr.)</label>
+                                                    <input x-model="formData.sec2.suffix" type="text" value="" id="suffix" @input="validate('suffix')" :class="{'border-red-500': validateError.suffix}">
+                                                    <small x-text="validateError.suffix" class="text-red-500 block"></small>
+
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="row">
                                             <div class="col-12">
                                                 <div>
-                                                    <label for="ctl00_ctl00_MainContent_WizardContent_drpCountry">Country<span class="redtext">*</span></label>
-                                                    <select id="ctl00_ctl00_MainContent_WizardContent_drpCountry" class="select">
-                                                        <option value=""></option>
+                                                    <label for="country">Country<span class="text-red-500">*</span></label>
+                                                    <select x-model="formData.sec2.country" id="country" class="select" @change="validate('country')" :class="{'border-red-500': validateError.country}">
+                                                        <option value="">[make selection]</option>
                                                         <option value="Canada">Canada</option>
                                                         <option value="South Africa">South Africa</option>
                                                         <option value="United Kingdom - England">United Kingdom - England</option>
                                                         <option value="United Kingdom - Wales">United Kingdom - Wales</option>
                                                         <option value="United States" selected="selected">United States</option>
                                                     </select>
+                                                    <small x-text="validateError.country" class="text-red-500 block"></small>
+
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <div>
-                                                    <label for="ctl00_ctl00_MainContent_WizardContent_drpStateProvince">State / Province / County</label>
-                                                    <select id="ctl00_ctl00_MainContent_WizardContent_drpStateProvince" class="select">
-                                                        <option value="[make selection]">[make selection]</option>
+                                                    <label for="state">State / Province / County <span class="text-red-500">*</span></label>
+                                                    <select x-model="formData.sec2.state" id="state" class="select" @change="validate('state')" :class="{'border-red-500': validateError.state}">
+                                                        <option value="">[make selection]</option>
                                                         <option value="Alabama">Alabama</option>
                                                         <option value="Alaska">Alaska</option>
                                                         <option value="Arizona">Arizona</option>
@@ -299,120 +315,134 @@ if (is_user_logged_in()) {
                                                         <option value="Wisconsin">Wisconsin</option>
                                                         <option value="Wyoming">Wyoming</option>
                                                     </select>
+                                                    <small x-text="validateError.state" class="text-red-500 block"></small>
+
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div>
-                                                <label for="ctl00_ctl00_MainContent_WizardContent_txtCity">City / Town<span class="redtext">*</span></label>
-                                                <input type="text" value="" id="ctl00_ctl00_MainContent_WizardContent_txtCity" class="form-control">
+                                                <label for="city">City / Town<span class="text-red-500">*</span></label>
+                                                <input x-model="formData.sec2.city" type="text" value="" id="city" @input="validate('city')" :class="{'border-red-500': validateError.city}">
+                                                <small x-text="validateError.city" class="text-red-500 block"></small>
+
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div>
-                                                <label for="ctl00_ctl00_MainContent_WizardContent_txtEmailAddress">Email Address<span class="redtext">*</span></label>
-                                                <input type="email" value="" id="ctl00_ctl00_MainContent_WizardContent_txtEmailAddress" class="form-control">
+                                                <label for="email">Email Address<span class="text-red-500">*</span></label>
+                                                <input x-model="formData.sec2.email" type="email" value="" id="email" @input="validate('email')" :class="{'border-red-500': validateError.email}">
+                                                <small x-text="validateError.email" class="text-red-500 block"></small>
+
                                             </div>
                                         </div>
                                         <div class="col-12 mt-4">
                                             <div>
-                                                <p class="form-label mt-2">Gender pronoun:<span class="redtext">*</span></p>
+                                                <p class="form-label mt-2">Gender pronoun:<span class="text-red-500">*</span></p>
                                                 <div class="flex flex-col">
                                                     <div>
-                                                        <input type="radio" name="gender" class="mr-4"><label for="">Male (he/his)</label>
+                                                        <input x-model="formData.sec2.gender" type="radio" name="gender" value="1" class="mr-4" @change="validate('gender')"><label for="">Male (he/his)</label>
                                                     </div>
                                                     <div>
-                                                        <input type="radio" name="gender" class="mr-4"><label for="">Female (she/her)</label>
+                                                        <input x-model="formData.sec2.gender" type="radio" name="gender" value="2" class="mr-4" @change="validate('gender')"><label for="">Female (she/her)</label>
                                                     </div>
                                                     <div>
-                                                        <input type="radio" name="gender" class="mr-4"><label for="">Neutral (they/their)</label>
+                                                        <input x-model="formData.sec2.gender" type="radio" name="gender" value="3" class="mr-4" @change="validate('gender')"><label for="">Neutral (they/their)</label>
                                                     </div>
+                                                    <small x-text="validateError.gender" class="text-red-500 block"></small>
+
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div x-show="activeForm === 'sec-3'">
-                                <div>
+                            <div x-show="activeForm === 'sec3'">
+                                <div x-show="activeSubForm === 'intro'">
                                     <p>Family Status</p>
                                     <p>* = required information</p>
                                     <div>
-                                        <label for="">Marital Status</label>
-                                        <select name="" id="">
+                                        <label for="status">Marital Status</label>
+                                        <select x-model="formData.sec3.status" name="status" id="status" @change="validate('status')" :class="{'border-red-500': validateError.status}">
                                             <option value="">[make selection]</option>
-                                            <option value="">single</option>
-                                            <option value="">married</option>
-                                            <option value="">separated</option>
-                                            <option value="">separated, but want my spouse to be the main beneficiary</option>
-                                            <option value="">divorced</option>
-                                            <option value="">widowed</option>
-                                            <option value="">in a civil union / domestic partnership</option>
+                                            <option value="1">single</option>
+                                            <option value="2">married</option>
+                                            <option value="3">separated</option>
+                                            <option value="4">separated, but want my spouse to be the main beneficiary</option>
+                                            <option value="5">divorced</option>
+                                            <option value="6">widowed</option>
+                                            <option value="7">in a civil union / domestic partnership</option>
                                         </select>
+                                        <small x-text="validateError.status" class="text-red-500 block"></small>
                                     </div>
 
                                     <div class="flex flex-col">
                                         <p>Living Children:</p>
 
                                         <div>
-                                            <input type="radio" name="children" class="mr-4"><label for="">Yes</label>
+                                            <input type="radio" name="children" value="1" class="mr-4" x-model="formData.sec3.children" @change="validate('children')"><label for="">Yes</label>
                                         </div>
                                         <div>
-                                            <input type="radio" name="children" class="mr-4"><label for="">No</label>
+                                            <input type="radio" name="children" value="2" class="mr-4" x-model="formData.sec3.children" @change="validate('children')"><label for="">No</label>
                                         </div>
+                                        <small x-text="validateError.children" class="text-red-500 block"></small>
                                     </div>
 
                                     <div class="flex flex-col">
                                         <p>Living Grand-Children:</p>
 
                                         <div>
-                                            <input type="radio" name="grandChildren" class="mr-4"><label for="">Yes</label>
+                                            <input type="radio" name="grandChildren" value="1" class="mr-4" x-model="formData.sec3.grandChildren" @change="validate('grandChildren')"><label for="">Yes</label>
                                         </div>
                                         <div>
-                                            <input type="radio" name="grandChildren" class="mr-4"><label for="">No</label>
+                                            <input type="radio" name="grandChildren" value="2" class="mr-4" x-model="formData.sec3.grandChildren" @change="validate('grandChildren')"><label for="">No</label>
                                         </div>
+                                        <small x-text="validateError.grandChildren" class="text-red-500 block"></small>
                                     </div>
                                 </div>
 
-                                <div>
+                                <div x-show="activeSubForm === 'partner'">
                                     <p>Spouse/Partner Details</p>
                                     <p>* = required information</p>
 
                                     <div>
                                         <label for="">Full Name</label>
-                                        <input type="text" name="" id="">
+                                        <input type="text" name="" id="" x-model="formData.sec3.fullName" @input="validate('fullName')">
+                                        <small x-text="validateError.fullName" class="text-red-500 block"></small>
                                     </div>
 
                                     <div>
                                         <label for="">Relation</label>
-                                        <select name="" id="">
+                                        <select name="" id="" x-model="formData.sec3.relation" @change="validate('relation')">
                                             <option value="">[make selection]</option>
-                                            <option value="">wife</option>
-                                            <option value="">husband</option>
-                                            <option value="">common law wife</option>
-                                            <option value="">common law husband</option>
-                                            <option value="">partner</option>
+                                            <option value="wife">wife</option>
+                                            <option value="husband">husband</option>
+                                            <option value="common law wife">common law wife</option>
+                                            <option value="common law husband">common law husband</option>
+                                            <option value="partner">partner</option>
                                         </select>
+                                        <small x-text="validateError.relation" class="text-red-500 block"></small>
                                     </div>
 
                                     <div>
-                                        <p class="form-label mt-2">Gender pronoun:<span class="redtext">*</span></p>
+                                        <p class="form-label mt-2">Gender pronoun:<span class="text-red-500">*</span></p>
                                         <div class="flex flex-col">
                                             <div>
-                                                <input type="radio" name="gender" class="mr-4"><label for="">Male (he/his)</label>
+                                                <input type="radio" name="gender" value="1" x-model="formData.sec3.partnerGender" @change="validate('partnerGender')" class="mr-4"><label for="">Male (he/his)</label>
                                             </div>
                                             <div>
-                                                <input type="radio" name="gender" class="mr-4"><label for="">Female (she/her)</label>
+                                                <input type="radio" name="gender" value="2" x-model="formData.sec3.partnerGender" @change="validate('partnerGender')" class="mr-4"><label for="">Female (she/her)</label>
                                             </div>
                                             <div>
-                                                <input type="radio" name="gender" class="mr-4"><label for="">Neutral (they/their)</label>
+                                                <input type="radio" name="gender" value="3" x-model="formData.sec3.partnerGender" @change="validate('partnerGender')" class="mr-4"><label for="">Neutral (they/their)</label>
                                             </div>
+                                            <small x-text="validateError.partnerGender" class="text-red-500 block"></small>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Children -->
-                                <div>
+                                <div x-show="activeSubForm === 'children'">
                                     <p>Identify Children</p>
                                     <p>* = required information</p>
 
@@ -422,7 +452,7 @@ if (is_user_logged_in()) {
                                     </div>
 
                                     <div>
-                                        <p class="form-label mt-2">Relationship:<span class="redtext">*</span></p>
+                                        <p class="form-label mt-2">Relationship:<span class="text-red-500">*</span></p>
                                         <div class="flex flex-col">
                                             <div>
                                                 <input type="radio" name="relationship" class="mr-4"><label for="">Son</label>
@@ -635,7 +665,7 @@ if (is_user_logged_in()) {
 
                                 <!-- Grand Child -->
 
-                                <div>
+                                <div x-show="activeSubForm === 'grandchildren'">
                                     <p>Identify Grandchildren</p>
 
                                     <p>Identifying all of your grandchildren is optional. It allows you to choose them later in this wizard if you decide to leave them some of your assets. If you do not plan on leaving anything specific to your grandchildren, you can simply skip this page.</p>
@@ -659,7 +689,7 @@ if (is_user_logged_in()) {
                                     </div>
 
                                     <div>
-                                        <p class="form-label mt-2">Relationship:<span class="redtext">*</span></p>
+                                        <p class="form-label mt-2">Relationship:<span class="text-red-500">*</span></p>
                                         <div class="flex flex-col">
                                             <div>
                                                 <input type="radio" name="relationship" class="mr-4"><label for="">Son</label>
@@ -887,24 +917,61 @@ if (is_user_logged_in()) {
         document.addEventListener('alpine:init', () => {
             Alpine.data('data', () => ({
                 child: 0,
-                activeForm: 'sec-2',
+                activeForm: 'sec3',
+                activeSubForm: 'partner',
+                checkSubSec: ['sec3'],
                 allPages: [
-                    'sec-1',
-                    'sec-2',
-                    'sec-3',
+                    'sec1',
+                    'sec2',
+                    'sec3',
+                    'sec4'
                 ],
+                allSubPages: {
+                    'sec3': ['intro', 'partner', 'children', 'grandchildren'],
+                },
                 mainForm: true,
                 selectedOpt: 6,
 
+                formData: {
+                    sec2: {
+                        prefix: '',
+                        suffix: '',
+                        firstName: '',
+                        middleName: '',
+                        lastName: '',
+                        email: '',
+                        gender: '',
+                        country: '',
+                        state: '',
+                        city: ''
+                    },
+
+                    sec3: {
+                        status: '',
+                        children: '',
+                        grandChildren: '',
+                        fullName: '',
+                        relation: '',
+                        partnerGender: ''
+                    },
+                },
+
                 qna: {
-                    'sec-1': {
+                    sec1: {
                         'Question 1': 'Answer 1',
                         'Question 2': 'Answer 2',
                         'Question 3': 'Answer 3',
                         'Question 4': 'Answer 4',
                         'Question 5': 'Answer 5',
                     },
-                    'sec-2': {
+                    sec2: {
+                        'Question 1': 'Answer 1',
+                        'Question 2': 'Answer 2',
+                        'Question 3': 'Answer 3',
+                        'Question 4': 'Answer 4',
+                        'Question 5': 'Answer 5',
+                    },
+                    sec3: {
                         'Question 1': 'Answer 1',
                         'Question 2': 'Answer 2',
                         'Question 3': 'Answer 3',
@@ -926,13 +993,152 @@ if (is_user_logged_in()) {
                     'Section 10: Next Step',
                 ],
 
+                validateRules: {
+                    sec2: {
+                        prefix: {
+                            max: 20,
+                            min: 2,
+                            required: true,
+                        },
+                        suffix: {
+                            max: 20,
+                            required: false,
+                        },
+                        firstName: {
+                            max: 20,
+                            min: 2,
+                            required: true,
+                        },
+                        middleName: {
+                            max: 20,
+                            required: false,
+                        },
+                        lastName: {
+                            max: 20,
+                            min: 2,
+                            required: true,
+                        },
+                        email: {
+                            max: 20,
+                            min: 2,
+                            email: true,
+                            required: true,
+                        },
+                        gender: {
+                            required: true,
+                        },
+                        country: {
+                            required: true,
+                        },
+                        state: {
+                            required: true,
+                        },
+                        city: {
+                            max: 20,
+                            min: 2,
+                            required: true,
+                        },
+                    },
+                    sec3: {
+                        intro: {
+                            status: {
+                                required: true,
+                            },
+                            children: {
+                                required: true,
+                            },
+                            grandChildren: {
+                                required: true,
+                            },
+                        },
+
+                        partner: {
+                            fullName: {
+                                required: true,
+                                max: 50,
+                                min: 2,
+                            },
+                            relation: {
+                                required: true,
+                            },
+                            partnerGender: {
+                                required: true,
+                            }
+                        }
+                    }
+                },
+
+                validateError: {},
+
+                validate(inputName) {
+                    let rules;
+                    if (this.checkSubSec.includes(this.activeForm)) {
+                        rules = this.validateRules[this.activeForm][this.activeSubForm][inputName];
+                        // console.log(rules);
+
+                    } else {
+                        rules = this.validateRules[this.activeForm][inputName];
+                    }
+                    // console.log(inputName);
+                    const value = this.formData[this.activeForm][inputName].trim();
+
+                    this.validateError[inputName] = '';
+
+                    if (rules.required && !value) {
+                        this.validateError[inputName] = 'This field is required.';
+                        return;
+                    }
+                    if (rules.email && !this.isValidEmail(value)) {
+                        this.validateError[inputName] = 'Invalid email address.';
+                        return;
+                    }
+                    if (rules.max && value.length > rules.max) {
+                        this.validateError[inputName] = `Maximum ${rules.max} characters allowed.`;
+                        return;
+                    }
+
+                    if (rules.min && value.length < rules.min) {
+                        this.validateError[inputName] = `Minimum ${rules.min} characters required.`;
+                        return;
+                    }
+                },
+
+                validateOnSubmit() {
+
+                    if (this.checkSubSec.includes(this.activeForm)) {
+                        console.log('fsfsf');
+
+                        for (const inputName in this.validateRules[this.activeForm][this.activeSubForm]) {
+                            this.validate(inputName);
+                        }
+                    } else {
+                        for (const inputName in this.validateRules[this.activeForm]) {
+                            this.validate(inputName);
+                        }
+                    }
+
+
+                    for (const inputName in this.validateError) {
+                        if (this.validateError[inputName]) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                },
+
+                isValidEmail(email) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    return emailRegex.test(email);
+                },
+
                 openPage(pageName) {
                     switch (pageName) {
                         case 'createMod':
                             this.activeForm = 'createMod';
                             break;
-                        case 'sec-1':
-                            this.activeForm = 'sec-1';
+                        case 'sec1':
+                            this.activeForm = 'sec1';
                             this.mainForm = true;
                             break;
                         default:
@@ -962,17 +1168,48 @@ if (is_user_logged_in()) {
 
                 nextPage() {
 
-                    let page = this.allPages.indexOf(this.activeForm);
+                    if (this.validateOnSubmit()) {
+                        let page = this.allPages.indexOf(this.activeForm);
+                        if (page >= 0 && page < this.allPages.length - 1) {
+                            this.submit(page);
+                        }
+                    }
 
-                    if (page >= 0 && page < this.allPages.length - 1) {
-                        let nextPage = page + 1;
-                        this.activeForm = this.allPages[nextPage];
+                },
+
+                submit(page) {
+                    if (this.checkSubSec.includes(this.activeForm)) {
+                        let index = this.allSubPages[this.activeForm].indexOf(this.activeSubForm);
+                        if (this.allSubPages[this.activeForm].length - 1 > index) {
+                            this.activeSubForm = this.allSubPages[this.activeForm][index + 1];
+                        } else {
+                            this._nextPage(page)
+                        }
+                    } else {
+                        this._nextPage(page)
                     }
                 },
 
-                save() {
+                _nextPage(page) {
+                    let nextPage = page + 1;
+                    this.activeForm = this.allPages[nextPage];
+                    if (this.checkSubSec.includes(this.activeForm)) {
+                        this.activeSubForm = this.allSubPages[this.activeForm][0];
+                    }
+                },
 
-                }
+
+                save() {
+                    if (this.validateOnSubmit()) {
+                        alert('Save Successfully!');
+                    }
+                },
+
+                // section 3 logic
+                partnerFormOpen: [2, 3, 4, 7],
+                partner: {},
+                children: [],
+                grandChildren: [],
             }))
         })
     </script>

@@ -17,33 +17,31 @@ if(is_user_logged_in()){
     $userdata = get_userdata($user_id);
     $user_meta = get_user_meta( $user_id);
     $date_display_format = "F d, Y";    
-    $createdDate = $user_meta['acc_created_on'] !='' ?$user_meta['acc_created_on']:date(EXP_DATE_FORMAT,strtotime("yesterday"));
+    
+    $createdDate = date(EXP_DATE_FORMAT,strtotime($userdata->user_registered)); 
     $dateObject =  DateTime::createFromFormat(EXP_DATE_FORMAT, $createdDate);
 
     $creationDate = $dateObject->format($date_display_format);
     $dateObject = DateTime::createFromFormat(EXP_DATE_FORMAT, $user_meta['acc_expires_on'][0]);
     $expiryDate = $dateObject->format($date_display_format);
-    $isMemberExpired = $expiryDate < date($date_display_format,time());  
-    // echo $isMemberExpired;
-    // echo '<pre>';
-    // print_r($user_meta);
-    // echo '</pre>';    
+    $isMemberExpired = strtotime($user_meta['acc_expires_on'][0]) < strtotime(date(EXP_DATE_FORMAT,time()));  
+  
 ?>
 <div class="services-wrapper py-5">
     <div class="inner-section">
         <div class="welcome-section">
-            <p>Welcome, <?= $user_meta['first_name'][0]; ?></p>
+            <p class="mb-1">Welcome, <?= $user_meta['first_name'][0]; ?></p>
             <a class="btn btn-info logout-btn" href="<?= site_url('logout')?>">Logout</a>
         </div>    
-        <div class="membership-section">
-            <p>Member since: <span><?= $creationDate ?></span></p>
+        <div class="membership-section mb-4">
+            <p class="mb-1">Member since: <span><?= $creationDate ?></span></p>
             <?php
-            if(!$isMemberExpired){ ?> <p>Membership Expires: <span><?= $expiryDate ?></span></p>
+            if(!$isMemberExpired){ ?> <p class="mb-1">Membership Expires: <span><?= $expiryDate ?></span></p>
             <?php
-            }else{ ?> <p>Membership Expired: <span><?= $expiryDate ?></span></p> <?php } ?>
+            }else{ ?> <p class="mb-1">Membership Expired: <span><?= $expiryDate ?></span></p> <?php } ?>
         </div>
         
-        <div class="extend-memberships-btns">
+        <div class="extend-memberships-btns d-flex flex-column gap-2 flex-md-row">
             <?php
             $args = array(
                 'post_type'      => 'product',
@@ -66,7 +64,7 @@ if(is_user_logged_in()){
             ?>                      
         </div>
         <?php if(!$isMemberExpired){ ?>
-            <div class="container p-0 try-buy-service-wrapper">
+            <div class="container p-0 try-buy-service-wrapper mt-4 border border-2 rounded shadow p-4">
                 <div>
                     <h3>Last Will and Testament</h3>
                     <p>Create a perfect, lawyer-approved legal Will from the comfort of your home.</p>

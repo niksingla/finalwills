@@ -665,21 +665,21 @@ if (is_user_logged_in()) {
 
                                 <!-- Grand Child -->
 
-                                <div x-show="activeSubForm === 'grandchildren'">
-                                    <p>Identify Grandchildren</p>
+                                <div x-show="activeSubForm === 'grandChildren'">
+                                    <p>Identify grandChildren</p>
 
-                                    <p>Identifying all of your grandchildren is optional. It allows you to choose them later in this wizard if you decide to leave them some of your assets. If you do not plan on leaving anything specific to your grandchildren, you can simply skip this page.</p>
+                                    <p>Identifying all of your grandChildren is optional. It allows you to choose them later in this wizard if you decide to leave them some of your assets. If you do not plan on leaving anything specific to your grandChildren, you can simply skip this page.</p>
 
                                     <p>* = required information</p>
 
                                     <div>
                                         <div>
                                             <input type="radio" name="grand" id="">
-                                            <label for="">I have grandchildren, but I am NOT leaving them something directly in my Will</label>
+                                            <label for="">I have grandChildren, but I am NOT leaving them something directly in my Will</label>
                                         </div>
                                         <div>
                                             <input type="radio" name="grand" id="">
-                                            <label for="">I have grandchildren, and I MIGHT OR MIGHT NOT leave them something in my Will</label>
+                                            <label for="">I have grandChildren, and I MIGHT OR MIGHT NOT leave them something in my Will</label>
                                         </div>
                                     </div>
 
@@ -899,6 +899,9 @@ if (is_user_logged_in()) {
                                         <button>Add Grand Child</button>
                                     </div>
                                 </div>
+                                <div x-show="activeSubForm === 'deceased'">
+                                    <h1>Deceased Family Members</h1>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -918,7 +921,7 @@ if (is_user_logged_in()) {
             Alpine.data('data', () => ({
                 child: 0,
                 activeForm: 'sec3',
-                activeSubForm: 'partner',
+                activeSubForm: 'intro',
                 checkSubSec: ['sec3'],
                 allPages: [
                     'sec1',
@@ -927,7 +930,7 @@ if (is_user_logged_in()) {
                     'sec4'
                 ],
                 allSubPages: {
-                    'sec3': ['intro', 'partner', 'children', 'grandchildren'],
+                    'sec3': ['intro', 'partner', 'children', 'grandChildren', 'deceased'],
                 },
                 mainForm: true,
                 selectedOpt: 6,
@@ -1106,7 +1109,6 @@ if (is_user_logged_in()) {
                 validateOnSubmit() {
 
                     if (this.checkSubSec.includes(this.activeForm)) {
-                        console.log('fsfsf');
 
                         for (const inputName in this.validateRules[this.activeForm][this.activeSubForm]) {
                             this.validate(inputName);
@@ -1177,8 +1179,51 @@ if (is_user_logged_in()) {
 
                 },
 
+                selectedFields: {
+                    sec3: {
+                        partner: false,
+                        children: false,
+                        grandChildren: false,
+                        deceased: true
+                    }
+                },
+
                 submit(page) {
                     if (this.checkSubSec.includes(this.activeForm)) {
+                        if (this.activeForm === "sec3") {
+                            if (this.activeSubForm === 'intro') {
+                                this.selectedFields[this.activeForm].partner = [2, 4, 5, 7].includes(+(this.formData[this.activeForm].status));
+                                this.selectedFields[this.activeForm].children = this.formData[this.activeForm].children === '1';
+                                this.selectedFields[this.activeForm].grandChildren = this.formData[this.activeForm].grandChildren === '1';
+
+                                if (this.selectedFields[this.activeForm].partner) {
+                                    return this.activeSubForm = 'partner';
+                                } else if (this.selectedFields[this.activeForm].children) {
+                                    return this.activeSubForm = 'children';
+                                } else if (this.selectedFields[this.activeForm].grandChildren) {
+                                    return this.activeSubForm = 'grandChildren';
+                                } else {
+                                    return this.activeSubForm = 'deceased';
+                                }
+                            } else if (this.activeSubForm === 'partner') {
+                                if (this.selectedFields[this.activeForm].children) {
+                                    return this.activeSubForm = 'children';
+                                } else if (this.selectedFields[this.activeForm].grandChildren) {
+                                    return this.activeSubForm = 'grandChildren';
+                                } else {
+                                    return this.activeSubForm = 'deceased';
+                                }
+                            } else if (this.activeSubForm === 'children') {
+                                if (this.selectedFields[this.activeForm].grandChildren) {
+                                    return this.activeSubForm = 'grandChildren';
+                                } else {
+                                    return this.activeSubForm = 'deceased';
+                                }
+                            } else {
+                                return this.activeSubForm = 'deceased';
+                            }
+                            // console.log([2, 4, 5, 7].includes(+(this.formData[this.activeForm].status)));
+                        }
                         let index = this.allSubPages[this.activeForm].indexOf(this.activeSubForm);
                         if (this.allSubPages[this.activeForm].length - 1 > index) {
                             this.activeSubForm = this.allSubPages[this.activeForm][index + 1];

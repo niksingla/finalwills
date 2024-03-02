@@ -13,10 +13,10 @@ add_action('wp_head', function () {
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <script>
-      tailwind.config = {
-        important: true,
-      }
-    </script>
+                tailwind.config = {
+                important: true,
+            }
+        </script>
     HTML;
 
     echo $html;
@@ -42,7 +42,7 @@ if (is_user_logged_in()) {
         }
     </style>
     <!-- Code here -->
-    <div x-data="data">
+    <div x-data="data" x-init="updateState();">
         <div x-cloak>
             <div>
                 <a href="javascript:void(0)">
@@ -141,14 +141,14 @@ if (is_user_logged_in()) {
                     <div class="flex flex-row justify-center gap-4">
                         <div class="text-xl">Progress</div>
                         <div class="flex flex-col">
-                            <progress value="70" max="100"></progress>
-                            <div>Section 1 of 10</div>
+                            <progress x-bind:value="progressValue*10" max="100"></progress>
+                            <div>Section <span x-text="progressValue"></span> of 10</div>
                         </div>
                     </div>
                     <div>
-                        <select @change="selectChanged($event)">
+                        <select id="sec-select" x-model="selectedOpt" @change="selectChanged($event)">
                             <template x-for="(item, index) in sectionSelOption">
-                                <option :value="index" :selected="selectedOpt == index ? true : false" x-text="item"></option>
+                                <option :value="allPages[index]" :selected="selectedOpt == allPages[index]" x-text="item"></option>
                             </template>
                         </select>
                     </div>
@@ -903,6 +903,13 @@ if (is_user_logged_in()) {
                                     <h1>Deceased Family Members</h1>
                                 </div>
                             </div>
+                            <div x-show="activeForm === 'sec4'"></div>
+                            <div x-show="activeForm === 'sec5'"></div>
+                            <div x-show="activeForm === 'sec6'"></div>
+                            <div x-show="activeForm === 'sec7'"></div>
+                            <div x-show="activeForm === 'sec8'"></div>
+                            <div x-show="activeForm === 'sec9'"></div>
+                            <div x-show="activeForm === 'sec10'"></div>
                         </div>
                     </div>
                 </div>
@@ -921,19 +928,26 @@ if (is_user_logged_in()) {
             Alpine.data('data', () => ({
                 child: 0,
                 activeForm: 'sec3',
+                progressValue:1,
                 activeSubForm: 'intro',
                 checkSubSec: ['sec3'],
                 allPages: [
                     'sec1',
                     'sec2',
                     'sec3',
-                    'sec4'
+                    'sec4',
+                    'sec5',
+                    'sec6',
+                    'sec7',
+                    'sec8',
+                    'sec9',
+                    'sec10',
                 ],
                 allSubPages: {
                     'sec3': ['intro', 'partner', 'children', 'grandChildren', 'deceased'],
                 },
-                mainForm: true,
-                selectedOpt: 6,
+                mainForm:false,
+                selectedOpt: 1,
 
                 formData: {
                     sec2: {
@@ -960,6 +974,7 @@ if (is_user_logged_in()) {
                 },
 
                 qna: {
+                    home:{},createMod:{},
                     sec1: {
                         'Question 1': 'Answer 1',
                         'Question 2': 'Answer 2',
@@ -1150,12 +1165,12 @@ if (is_user_logged_in()) {
                 },
 
                 selectChanged(e) {
-                    let page = e.target.value;
-
-                    switch (page) {
-                        case page:
-
-                            break;
+                    if (this.validateOnSubmit()) {
+                        let page = e.target.value;
+                        this.activeForm = page
+                        this.updateState()
+                    }else{
+                        this.selectedOpt = this.activeForm
                     }
                 },
 
@@ -1163,11 +1178,42 @@ if (is_user_logged_in()) {
                     let page = this.allPages.indexOf(this.activeForm);
 
                     if (page > 0) {
-                        let nextPage = page - 1;
-                        this.activeForm = this.allPages[nextPage];
+                        if(this.checkSubSec.includes(this.activeForm)){
+                            let activeSubIndex = this.allSubPages[this.activeForm].indexOf(this.activeSubForm)
+                            if(activeSubIndex>0){
+                                let subPage = this.validPrevSubPage(activeSubIndex)                                
+                                if(subPage) {
+                                    this.activeSubForm = subPage
+                                }
+                                else{
+                                    let prevPage = page - 1;
+                                    this.activeForm = this.allPages[prevPage];    
+                                }
+                            }else{
+                                let prevPage = page - 1;
+                                this.activeForm = this.allPages[prevPage];
+                            }                            
+                        }else{
+                            let prevPage = page - 1;
+                            this.activeForm = this.allPages[prevPage];
+                        }
+                    }
+                    this.updateState()
+                },
+                validPrevSubPage(activeSubIndex){                    
+                    if(activeSubIndex>0){                                    
+                        let prevSubForm = this.allSubPages[this.activeForm][activeSubIndex-1]                                               
+                        if(this.selectedFields[this.activeForm][prevSubForm] || this.selectedFields[this.activeForm][prevSubForm]==undefined){
+                            return prevSubForm
+                        }
+                        else {
+                            return this.validPrevSubPage(activeSubIndex-1)
+                        }
+                    }
+                    else{
+                        return false
                     }
                 },
-
                 nextPage() {
 
                     if (this.validateOnSubmit()) {
@@ -1176,9 +1222,8 @@ if (is_user_logged_in()) {
                             this.submit(page);
                         }
                     }
-
+                    this.updateState()
                 },
-
                 selectedFields: {
                     sec3: {
                         partner: false,
@@ -1192,41 +1237,20 @@ if (is_user_logged_in()) {
                     if (this.checkSubSec.includes(this.activeForm)) {
                         if (this.activeForm === "sec3") {
                             if (this.activeSubForm === 'intro') {
-                                this.selectedFields[this.activeForm].partner = [2, 4, 5, 7].includes(+(this.formData[this.activeForm].status));
+                                this.selectedFields[this.activeForm].partner = this.partnerFormOpen.includes(+(this.formData[this.activeForm].status));
                                 this.selectedFields[this.activeForm].children = this.formData[this.activeForm].children === '1';
-                                this.selectedFields[this.activeForm].grandChildren = this.formData[this.activeForm].grandChildren === '1';
-
-                                if (this.selectedFields[this.activeForm].partner) {
-                                    return this.activeSubForm = 'partner';
-                                } else if (this.selectedFields[this.activeForm].children) {
-                                    return this.activeSubForm = 'children';
-                                } else if (this.selectedFields[this.activeForm].grandChildren) {
-                                    return this.activeSubForm = 'grandChildren';
-                                } else {
-                                    return this.activeSubForm = 'deceased';
-                                }
-                            } else if (this.activeSubForm === 'partner') {
-                                if (this.selectedFields[this.activeForm].children) {
-                                    return this.activeSubForm = 'children';
-                                } else if (this.selectedFields[this.activeForm].grandChildren) {
-                                    return this.activeSubForm = 'grandChildren';
-                                } else {
-                                    return this.activeSubForm = 'deceased';
-                                }
-                            } else if (this.activeSubForm === 'children') {
-                                if (this.selectedFields[this.activeForm].grandChildren) {
-                                    return this.activeSubForm = 'grandChildren';
-                                } else {
-                                    return this.activeSubForm = 'deceased';
-                                }
-                            } else {
-                                return this.activeSubForm = 'deceased';
-                            }
-                            // console.log([2, 4, 5, 7].includes(+(this.formData[this.activeForm].status)));
+                                this.selectedFields[this.activeForm].grandChildren = this.formData[this.activeForm].grandChildren === '1';                                
+                            }                             
                         }
                         let index = this.allSubPages[this.activeForm].indexOf(this.activeSubForm);
-                        if (this.allSubPages[this.activeForm].length - 1 > index) {
-                            this.activeSubForm = this.allSubPages[this.activeForm][index + 1];
+                        if(index<this.allSubPages[this.activeForm].length-1){
+                            let nextSub = this.validNextSubPage(index)
+                            if(nextSub){
+                                this.activeSubForm = nextSub
+                            }
+                            else{
+                                this._nextPage(page)
+                            }
                         } else {
                             this._nextPage(page)
                         }
@@ -1234,13 +1258,28 @@ if (is_user_logged_in()) {
                         this._nextPage(page)
                     }
                 },
-
+                validNextSubPage(activeSubIndex){
+                    if(activeSubIndex < this.allSubPages[this.activeForm].length-1){ 
+                        let activeSubForm = this.allSubPages[this.activeForm][activeSubIndex]                       
+                        let nextSubForm = this.allSubPages[this.activeForm][activeSubIndex+1]                        
+                        if(this.selectedFields[this.activeForm][nextSubForm]){
+                            return nextSubForm
+                        }
+                        else {
+                            return this.validNextSubPage(activeSubIndex+1)
+                        }
+                    }
+                    else{
+                        return false
+                    }                    
+                },
                 _nextPage(page) {
                     let nextPage = page + 1;
                     this.activeForm = this.allPages[nextPage];
                     if (this.checkSubSec.includes(this.activeForm)) {
                         this.activeSubForm = this.allSubPages[this.activeForm][0];
                     }
+                    this.updateState()
                 },
 
 
@@ -1249,9 +1288,24 @@ if (is_user_logged_in()) {
                         alert('Save Successfully!');
                     }
                 },
-
+                updateState(){
+                    try {
+                        if (this.mainForm) {
+                            this.progressValue = this.activeForm.split("sec")[1]                            
+                        }
+                    }
+                    catch (err) {
+                        console.log('Progress bar cannot be updated');
+                    }
+                    this.selectedOpt = this.activeForm                    
+                    if(this.activeForm!=='home' && this.activeForm!=='home') {
+                        this.mainForm = true
+                    }else{
+                        this.mainForm = false
+                    }
+                },
                 // section 3 logic
-                partnerFormOpen: [2, 3, 4, 7],
+                partnerFormOpen: [2, 3, 4, 5, 7],
                 partner: {},
                 children: [],
                 grandChildren: [],

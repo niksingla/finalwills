@@ -24,7 +24,9 @@ if(is_user_logged_in()){
     $creationDate = $dateObject->format($date_display_format);
     $dateObject = DateTime::createFromFormat(EXP_DATE_FORMAT, $user_meta['acc_expires_on'][0]);
     $expiryDate = $dateObject->format($date_display_format);
-    $isMemberExpired = strtotime($user_meta['acc_expires_on'][0]) < strtotime(date(EXP_DATE_FORMAT,time()));  
+
+    $isMemberExpired = strtotime($expiryDate) < time();  
+    
   
 ?>
 <div class="services-wrapper py-5">

@@ -12,37 +12,121 @@ add_action('wp_head', function () {
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/datepicker.min.js"></script>
         <script>
                 tailwind.config = {
                 important: true,
             }
         </script>
     HTML;
-
+    $script = '<script src="'.get_stylesheet_directory_uri().'/assets/js/countries.js"></script>';
+    echo $script;
     echo $html;
 });
 
 get_header();
-
+function validateWillsForm($willsFormData = []){
+    $defaultValues = [
+        'sec1' => null,
+        'sec2' => [
+            'prefix' => '',
+            'suffix' => '',
+            'firstName' => '',
+            'middleName' => '',
+            'lastName' => '',
+            'email' => '',
+            'gender' => '',
+            'country' => '',
+            'state' => '',
+            'city' => ''
+        ],
+        'sec3' => [
+            'status' => '',
+            'children' => '',
+            'numChildren' => 1,
+            'childDetails' => [['name'=>'','relation'=>'','dob'=>'']],
+            'grandChildren' => '',
+            'numGrandChildren' => 1,
+            'grandChildDetails' => [['name'=>'','relation'=>'','dob'=>'']],
+            'fullName' => '',
+            'relation' => '',
+            'partnerGender' => '',
+            'grandChildrenDirect' => 1,
+            'deceased' => 1,   
+            'deceasedDetails' => [['name'=>'','gender'=>'','relation'=>'']],
+            'numDeceased' => 1,
+        ],
+        'sec4' => [
+            'otherBeneficiaries' => 1,
+            'numBeneficiaries' => 1,
+            'beneficiaryDetails' => [['gender' => '', 'name' => '', 'relation' => '', 'address' => '']],
+        ],
+        'sec5' => [
+            'guardianDetails' => [['childName'=>'','name'=>'','reason'=>'','alterName'=>'']]
+        ],
+        'sec6' => [
+            'executorDetails' => [['name'=>'','relation'=>'','address'=>'']],
+            'numExecutor' => 1,
+            'alterOptions' => 1,
+            'numAlterExecutor' => 0,
+            'alterExecutorDetails' => [['name'=>'','relation'=>'','address'=>'']],
+        ],
+        'sec7' => [
+            'charitableDonation' => 1,
+            'numBequests' => 1,
+            'bequestDetails' => [['type'=>1,'amount'=>'','percentage'=>'','asset'=>'','charityName'=>'']],
+        ],
+        'sec8' => null,
+        'sec9' => null,
+        'sec10' => null,        
+    ];
+    $validatedData = [];
+    foreach ($defaultValues as $section => $data) {
+        if(is_array($defaultValues[$section])){            
+            if(array_key_exists($section,$willsFormData)){
+                $validatedData[$section] = is_array($data) ? array_merge($defaultValues[$section], $willsFormData[$section]) : $defaultValues[$section];
+            }else{
+                $validatedData[$section] = $defaultValues[$section];
+            }
+        }
+    }   
+   return $validatedData;
+}
 if (is_user_logged_in()) {
     $userData = get_userdata(get_current_user_id());
     $userMeta = get_user_meta(get_current_user_id());
     $fullName = sprintf("%s %s", $userMeta['first_name'][0], $userMeta['last_name'][0]);
+    $will_data = [];
+    if(array_key_exists('wills_form_data',$userMeta) && is_array($userMeta['wills_form_data'])){
+        $will_data = unserialize($userMeta['wills_form_data'][0]);
+        $will_data = validateWillsForm($will_data);
+        // echo '<pre>';
+        // print_r($will_data);
+        // echo '</pre>';
+        // echo $will_data['sec2']['prefix'];
+        // exit;
+    }else{
+        $will_data = validateWillsForm($will_data);
+    }
+    
 ?>
-
     <style>
-        [x-cloak] {
-            display: none !important;
-        }
+            /* [x-cloak] {
+                display: none !important;
+            } */
 
         .ast-container {
             margin: 0;
             padding: 0;
             width: 100%;
+            max-width:100%!important;
         }
     </style>
     <!-- Code here -->
-    <div x-data="data" x-init="updateState();">
+    <script>
+        const willsFormData = <?php echo json_encode($will_data); ?>;        
+    </script>
+    <div x-data="data" x-init="updateState();" class="w-full">
         <div x-cloak>
             <div>
                 <a href="javascript:void(0)">
@@ -156,760 +240,725 @@ if (is_user_logged_in()) {
 
                 <div class="mt-10">
                     <div class="w-full">
-                        <div class="flex flex-row justify-center gap-2">
-                            <div class="flex-initial w-6/12 bg-blue-600 text-white px-10 py-4">
-                                <p class="text-2xl">Common Questions:</p>
-                                <div class="mt-8">
-                                    <template x-for="[question, answer] in Object.entries(qna[activeForm])">
-                                        <div>
-                                            <details>
-                                                <summary x-text="question"></summary>
-                                                <p class="text-sm" x-text="answer"></p>
-                                            </details>
-                                        </div>
-                                    </template>
+                        <div class="flex flex-row justify-start gap-12">
+                            <div class="w-4/12 bg-blue-600 text-white">
+                                <div class="flex-initial px-10 py-4">
+                                    <p class="text-2xl">Common Questions:</p>
+                                    <div class="mt-8">
+                                        <template x-for="[question, answer] in Object.entries(qna[activeForm])">
+                                            <div>
+                                                <details>
+                                                    <summary x-text="question"></summary>
+                                                    <p class="text-sm" x-text="answer"></p>
+                                                </details>
+                                            </div>
+                                        </template>
+                                    </div>
                                 </div>
                             </div>
-                            <div x-show="activeForm === 'sec1'">
-                                <p>Introduction</p>
-                                <i class="font-bold">We've made this easy! This should only take a short amount of your time...</i>
-                                <p>You will be asked a series of questions to help you create your Last Will and Testament.</p>
-
-                                <p>While answering the questions, if you need general assistance on the section, just read the Common Questions which appear on every page. If you don't see the questions, simply click on the big near the top of the page.</p>
-
-                                <p>Specific help for parts of a page that may be unclear is available by tapping (or moving your mouse over) the small symbol which appears next to some questions.</p>
-
-                                <p>At any point you can save your work and return later.</p>
-
-                                <p>When you are done, you should print and sign your document in the presence of witnesses to make it a legal Will.</p>
-
-                                <p>To begin stepping through these questions, click on the "NEXT" button which appears below...</p>
-                            </div>
-                            <div x-show="activeForm === 'sec2'">
-                                <p>Personal Details</p>
-                                <p>
-                                    It is important that you provide the information below so that the MyWill™ wizard can format a document that is custom-made based on your name, gender and local jurisdiction.
-                                </p>
-
-                                <p><span class="text-red-500">*</span> = required information</p>
-                                <div>
+                            <div class="w-8/12">
+                                <div x-show="activeForm === 'sec1'">
+                                    <h1 class="text-4xl text-blue-500">Introduction</h1>
+                                    <i class="font-bold">We've made this easy! This should only take a short amount of your time...</i>
+                                    <p>You will be asked a series of questions to help you create your Last Will and Testament.</p>
+    
+                                    <p>While answering the questions, if you need general assistance on the section, just read the Common Questions which appear on every page. If you don't see the questions, simply click on the big near the top of the page.</p>
+    
+                                    <p>Specific help for parts of a page that may be unclear is available by tapping (or moving your mouse over) the small symbol which appears next to some questions.</p>
+    
+                                    <p>At any point you can save your work and return later.</p>
+    
+                                    <p>When you are done, you should print and sign your document in the presence of witnesses to make it a legal Will.</p>
+    
+                                    <p>To begin stepping through these questions, click on the "NEXT" button which appears below...</p>
+                                </div>
+                                <div x-show="activeForm === 'sec2'">
+                                    <h1 class="text-4xl text-blue-500">Personal Details</h1>
+                                    <p>
+                                        It is important that you provide the information below so that the MyWill™ wizard can format a document that is custom-made based on your name, gender and local jurisdiction.
+                                    </p>
+    
+                                    <p><span class="text-red-500">*</span> = required information</p>
                                     <div>
-                                        <p></p>
                                         <div>
-
-                                        </div>
-                                        <div>
+                                            <p></p>
                                             <div>
-                                                <label for="prefix">Prefix (eg. Mr., Ms., Dr.)<span class="text-red-500">*</span></label>
-                                                <input x-model="formData.sec2.prefix" type="text" id="prefix" value="" @input="validate('prefix')" :class="{'border-red-500': validateError.prefix}">
-                                                <small x-text="validateError.prefix" class="text-red-500 block"></small>
+    
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-6 col-xl-4">
-                                                <div>
-                                                    <label for="firstName">First Name<span class="text-red-500">*</span></label>
-                                                    <input x-model="formData.sec2.firstName" type="text" value="" id="firstName" @input="validate('firstName')" :class="{'border-red-500': validateError.firstName}">
-                                                    <small x-text="validateError.firstName" class="text-red-500 block"></small>
-
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 col-xl-4">
-                                                <div>
-                                                    <label for="middleName">Middle Name</label>
-                                                    <input x-model="formData.sec2.middleName" type="text" value="" id="middleName" @input="validate('middleName')" :class="{'border-red-500': validateError.middleName}">
-                                                    <small x-text="validateError.middleName" class="text-red-500 block"></small>
-
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 col-xl-4">
-                                                <div>
-                                                    <label for="lastName">Last Name/Surname<span class="text-red-500">*</span></label>
-                                                    <input x-model="formData.sec2.lastName" type="text" value="" id="lastName" @input="validate('lastName')" :class="{'border-red-500': validateError.lastName}">
-                                                    <small x-text="validateError.lastName" class="text-red-500 block"></small>
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-6 col-xl-4">
-                                                <div>
-                                                    <label for="suffix">Suffix (eg. Jr., Sr.)</label>
-                                                    <input x-model="formData.sec2.suffix" type="text" value="" id="suffix" @input="validate('suffix')" :class="{'border-red-500': validateError.suffix}">
-                                                    <small x-text="validateError.suffix" class="text-red-500 block"></small>
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-12">
-                                                <div>
-                                                    <label for="country">Country<span class="text-red-500">*</span></label>
-                                                    <select x-model="formData.sec2.country" id="country" class="select" @change="validate('country')" :class="{'border-red-500': validateError.country}">
-                                                        <option value="">[make selection]</option>
-                                                        <option value="Canada">Canada</option>
-                                                        <option value="South Africa">South Africa</option>
-                                                        <option value="United Kingdom - England">United Kingdom - England</option>
-                                                        <option value="United Kingdom - Wales">United Kingdom - Wales</option>
-                                                        <option value="United States" selected="selected">United States</option>
-                                                    </select>
-                                                    <small x-text="validateError.country" class="text-red-500 block"></small>
-
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <div>
-                                                    <label for="state">State / Province / County <span class="text-red-500">*</span></label>
-                                                    <select x-model="formData.sec2.state" id="state" class="select" @change="validate('state')" :class="{'border-red-500': validateError.state}">
-                                                        <option value="">[make selection]</option>
-                                                        <option value="Alabama">Alabama</option>
-                                                        <option value="Alaska">Alaska</option>
-                                                        <option value="Arizona">Arizona</option>
-                                                        <option value="Arkansas">Arkansas</option>
-                                                        <option value="California" selected="selected">California</option>
-                                                        <option value="Colorado">Colorado</option>
-                                                        <option value="Connecticut">Connecticut</option>
-                                                        <option value="Delaware">Delaware</option>
-                                                        <option value="District of Columbia">District of Columbia</option>
-                                                        <option value="Florida">Florida</option>
-                                                        <option value="Georgia">Georgia</option>
-                                                        <option value="Hawaii">Hawaii</option>
-                                                        <option value="Idaho">Idaho</option>
-                                                        <option value="Illinois">Illinois</option>
-                                                        <option value="Indiana">Indiana</option>
-                                                        <option value="Iowa">Iowa</option>
-                                                        <option value="Kansas">Kansas</option>
-                                                        <option value="Kentucky">Kentucky</option>
-                                                        <option value="Louisiana">Louisiana</option>
-                                                        <option value="Maine">Maine</option>
-                                                        <option value="Maryland">Maryland</option>
-                                                        <option value="Massachusetts">Massachusetts</option>
-                                                        <option value="Michigan">Michigan</option>
-                                                        <option value="Minnesota">Minnesota</option>
-                                                        <option value="Mississippi">Mississippi</option>
-                                                        <option value="Missouri">Missouri</option>
-                                                        <option value="Montana">Montana</option>
-                                                        <option value="Nebraska">Nebraska</option>
-                                                        <option value="Nevada">Nevada</option>
-                                                        <option value="New Hampshire">New Hampshire</option>
-                                                        <option value="New Jersey">New Jersey</option>
-                                                        <option value="New Mexico">New Mexico</option>
-                                                        <option value="New York">New York</option>
-                                                        <option value="North Carolina">North Carolina</option>
-                                                        <option value="North Dakota">North Dakota</option>
-                                                        <option value="Ohio">Ohio</option>
-                                                        <option value="Oklahoma">Oklahoma</option>
-                                                        <option value="Oregon">Oregon</option>
-                                                        <option value="Pennsylvania">Pennsylvania</option>
-                                                        <option value="Rhode Island">Rhode Island</option>
-                                                        <option value="South Carolina">South Carolina</option>
-                                                        <option value="South Dakota">South Dakota</option>
-                                                        <option value="Tennessee">Tennessee</option>
-                                                        <option value="Texas">Texas</option>
-                                                        <option value="Utah">Utah</option>
-                                                        <option value="Vermont">Vermont</option>
-                                                        <option value="Virginia">Virginia</option>
-                                                        <option value="Washington">Washington</option>
-                                                        <option value="Washington D.C.">Washington D.C.</option>
-                                                        <option value="West Virginia">West Virginia</option>
-                                                        <option value="Wisconsin">Wisconsin</option>
-                                                        <option value="Wyoming">Wyoming</option>
-                                                    </select>
-                                                    <small x-text="validateError.state" class="text-red-500 block"></small>
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
                                             <div>
-                                                <label for="city">City / Town<span class="text-red-500">*</span></label>
-                                                <input x-model="formData.sec2.city" type="text" value="" id="city" @input="validate('city')" :class="{'border-red-500': validateError.city}">
-                                                <small x-text="validateError.city" class="text-red-500 block"></small>
-
+                                                <div>
+                                                    <label for="prefix">Prefix (eg. Mr., Ms., Dr.)<span class="text-red-500">*</span></label>
+                                                    <input x-model="formData.sec2.prefix" type="text" id="prefix" value="" @input="validate('prefix')" :class="{'border-red-500': validateError.prefix}">
+                                                    <small x-text="validateError.prefix" class="text-red-500 block"></small>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div>
-                                                <label for="email">Email Address<span class="text-red-500">*</span></label>
-                                                <input x-model="formData.sec2.email" type="email" value="" id="email" @input="validate('email')" :class="{'border-red-500': validateError.email}">
-                                                <small x-text="validateError.email" class="text-red-500 block"></small>
-
-                                            </div>
-                                        </div>
-                                        <div class="col-12 mt-4">
-                                            <div>
-                                                <p class="form-label mt-2">Gender pronoun:<span class="text-red-500">*</span></p>
-                                                <div class="flex flex-col">
+                                            <div class="row">
+                                                <div class="col-md-6 col-xl-4">
                                                     <div>
-                                                        <input x-model="formData.sec2.gender" type="radio" name="gender" value="1" class="mr-4" @change="validate('gender')"><label for="">Male (he/his)</label>
+                                                        <label for="firstName">First Name<span class="text-red-500">*</span></label>
+                                                        <input x-model="formData.sec2.firstName" type="text" value="" id="firstName" @input="validate('firstName')" :class="{'border-red-500': validateError.firstName}">
+                                                        <small x-text="validateError.firstName" class="text-red-500 block"></small>
+    
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 col-xl-4">
+                                                    <div>
+                                                        <label for="middleName">Middle Name</label>
+                                                        <input x-model="formData.sec2.middleName" type="text" value="" id="middleName" @input="validate('middleName')" :class="{'border-red-500': validateError.middleName}">
+                                                        <small x-text="validateError.middleName" class="text-red-500 block"></small>
+    
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 col-xl-4">
+                                                    <div>
+                                                        <label for="lastName">Last Name/Surname<span class="text-red-500">*</span></label>
+                                                        <input x-model="formData.sec2.lastName" type="text" value="" id="lastName" @input="validate('lastName')" :class="{'border-red-500': validateError.lastName}">
+                                                        <small x-text="validateError.lastName" class="text-red-500 block"></small>
+    
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 col-xl-4">
+                                                    <div>
+                                                        <label for="suffix">Suffix (eg. Jr., Sr.)</label>
+                                                        <input x-model="formData.sec2.suffix" type="text" value="" id="suffix" @input="validate('suffix')" :class="{'border-red-500': validateError.suffix}">
+                                                        <small x-text="validateError.suffix" class="text-red-500 block"></small>
+    
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <div>
+                                                        <label for="country">Country<span class="text-red-500">*</span></label>
+                                                        <select x-model="formData.sec2.country" id="country" class="select" @change="validate('country')" :class="{'border-red-500': validateError.country}"></select>
+                                                        <small x-text="validateError.country" class="text-red-500 block"></small>
+    
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <div>
+                                                        <label for="state">State / Province / County <span class="text-red-500">*</span></label>
+                                                        <select x-model="formData.sec2.state" id="state" class="select" @change="validate('state')" :class="{'border-red-500': validateError.state}"></select>
+                                                        <input type="hidden" id="prePopulatedState" x-model="formData.sec2.state">
+                                                        <small x-text="validateError.state" class="text-red-500 block"></small>
+    
+                                                    </div>
+                                                </div>
+                                                <!-- Populate the Countires and States using assets/js/countries.js -->
+                                                <script type="text/javascript">
+                                                    populateCountries("country", "state");
+                                                </script>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div>
+                                                    <label for="city">City / Town<span class="text-red-500">*</span></label>
+                                                    <input x-model="formData.sec2.city" type="text" value="" id="city" @input="validate('city')" :class="{'border-red-500': validateError.city}">
+                                                    <small x-text="validateError.city" class="text-red-500 block"></small>
+    
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div>
+                                                    <label for="email">Email Address<span class="text-red-500">*</span></label>
+                                                    <input x-model="formData.sec2.email" type="email" value="" id="email" @input="validate('email')" :class="{'border-red-500': validateError.email}">
+                                                    <small x-text="validateError.email" class="text-red-500 block"></small>
+    
+                                                </div>
+                                            </div>
+                                            <div class="col-12 mt-4">
+                                                <div>
+                                                    <p class="form-label mt-2">Gender pronoun:<span class="text-red-500">*</span></p>
+                                                    <div class="flex flex-col">
+                                                        <div>
+                                                            <input x-model="formData.sec2.gender" type="radio" name="gender" value="1" class="mr-4" @change="validate('gender')"><label for="">Male (he/his)</label>
+                                                        </div>
+                                                        <div>
+                                                            <input x-model="formData.sec2.gender" type="radio" name="gender" value="2" class="mr-4" @change="validate('gender')"><label for="">Female (she/her)</label>
+                                                        </div>
+                                                        <div>
+                                                            <input x-model="formData.sec2.gender" type="radio" name="gender" value="3" class="mr-4" @change="validate('gender')"><label for="">Neutral (they/their)</label>
+                                                        </div>
+                                                        <small x-text="validateError.gender" class="text-red-500 block"></small>
+    
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div x-show="activeForm === 'sec3'">
+
+                                    <!-- Section 3 first form - Intro  -->
+                                    <div x-show="activeSubForm === 'intro'">
+                                        <h1 class="text-4xl text-blue-500">Family Status</h1>
+                                        <p>* = required information</p>
+                                        <div>
+                                            <label for="status">Marital Status</label>
+                                            <select x-model="formData.sec3.status" name="status" id="status" @change="validate('status')" :class="{'border-red-500': validateError.status}">
+                                                <option value="">[make selection]</option>
+                                                <option value="1">single</option>
+                                                <option value="2">married</option>
+                                                <option value="3">separated</option>
+                                                <option value="4">separated, but want my spouse to be the main beneficiary</option>
+                                                <option value="5">divorced</option>
+                                                <option value="6">widowed</option>
+                                                <option value="7">in a civil union / domestic partnership</option>
+                                            </select>
+                                            <small x-text="validateError.status" class="text-red-500 block"></small>
+                                        </div>
+    
+                                        <div class="flex flex-col">
+                                            <p>Living Children:</p>
+    
+                                            <div>
+                                                <input type="radio" name="children" value="1" class="mr-4" x-model="formData.sec3.children" @change="validate('children')"><label for="">Yes</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" name="children" value="2" class="mr-4" x-model="formData.sec3.children" @change="validate('children')"><label for="">No</label>
+                                            </div>
+                                            <small x-text="validateError.children" class="text-red-500 block"></small>
+                                        </div>
+    
+                                        <div class="flex flex-col">
+                                            <p>Living Grand-Children:</p>
+    
+                                            <div>
+                                                <input type="radio" name="grandChildren" value="1" class="mr-4" x-model="formData.sec3.grandChildren" @change="validate('grandChildren')"><label for="">Yes</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" name="grandChildren" value="2" class="mr-4" x-model="formData.sec3.grandChildren" @change="validate('grandChildren')"><label for="">No</label>
+                                            </div>
+                                            <small x-text="validateError.grandChildren" class="text-red-500 block"></small>
+                                        </div>
+                                    </div>
+    
+                                    <!-- Partner/Spouse Details -->
+                                    <div x-show="activeSubForm === 'partner'">
+                                        <h1 class="text-4xl text-blue-500">Spouse/Partner Details</h1>
+                                        <p>* = required information</p>
+    
+                                        <div>
+                                            <label for="">Full Name</label>
+                                            <input type="text" name="" id="" x-model="formData.sec3.fullName" @input="validate('fullName')">
+                                            <small x-text="validateError.fullName" class="text-red-500 block"></small>
+                                        </div>
+    
+                                        <div>
+                                            <label for="">Relation</label>
+                                            <select name="" id="" x-model="formData.sec3.relation" @change="validate('relation')">
+                                                <option value="">[make selection]</option>
+                                                <option value="wife">wife</option>
+                                                <option value="husband">husband</option>
+                                                <option value="common law wife">common law wife</option>
+                                                <option value="common law husband">common law husband</option>
+                                                <option value="partner">partner</option>
+                                            </select>
+                                            <small x-text="validateError.relation" class="text-red-500 block"></small>
+                                        </div>
+    
+                                        <div>
+                                            <p class="form-label mt-2">Gender pronoun:<span class="text-red-500">*</span></p>
+                                            <div class="flex flex-col">
+                                                <div>
+                                                    <input type="radio" name="gender" value="1" x-model="formData.sec3.partnerGender" @change="validate('partnerGender')" class="mr-4"><label for="">Male (he/his)</label>
+                                                </div>
+                                                <div>
+                                                    <input type="radio" name="gender" value="2" x-model="formData.sec3.partnerGender" @change="validate('partnerGender')" class="mr-4"><label for="">Female (she/her)</label>
+                                                </div>
+                                                <div>
+                                                    <input type="radio" name="gender" value="3" x-model="formData.sec3.partnerGender" @change="validate('partnerGender')" class="mr-4"><label for="">Neutral (they/their)</label>
+                                                </div>
+                                                <small x-text="validateError.partnerGender" class="text-red-500 block"></small>
+                                            </div>
+                                        </div>
+                                    </div>
+    
+                                    <!-- Children -->
+                                    <div x-show="activeSubForm === 'children'">
+                                        <h1 class="text-4xl text-blue-500">Identify Children</h1>
+                                        <p>* = required information</p>
+                                        <template x-for="(item,childIndex) in formData.sec3.childDetails">
+                                            <div class="mb-8">
+                                                <div>
+                                                    <label for=""><span x-show="childIndex >= 1" x-text="'#'+(childIndex+1)"></span> Child's Full Name</label>
+                                                    <input x-model="formData.sec3.childDetails[childIndex].name" type="text">
+                                                </div>
+            
+                                                <div>
+                                                    <p class="form-label mt-2">Relationship:<span class="text-red-500">*</span></p>
+                                                    <div class="flex flex-col">
+                                                        <div>
+                                                            <input type="radio" :name="'relation'+childIndex" x-model="formData.sec3.childDetails[childIndex].relation" value="1" class="mr-4"><label for="">Son</label>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" :name="'relation'+childIndex" x-model="formData.sec3.childDetails[childIndex].relation" value="2" class="mr-4"><label for="">Daughter</label>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" :name="'relation'+childIndex" x-model="formData.sec3.childDetails[childIndex].relation" value="3" class="mr-4"><label for="">Gender Neutral Child</label>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" :name="'relation'+childIndex" x-model="formData.sec3.childDetails[childIndex].relation" value="4" class="mr-4"><label for="">Stepson</label>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" :name="'relation'+childIndex" x-model="formData.sec3.childDetails[childIndex].relation" value="5" class="mr-4"><label for="">Stepdaughter</label>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" :name="'relation'+childIndex" x-model="formData.sec3.childDetails[childIndex].relation" value="6" class="mr-4"><label for="">Gender neutral stepchild</label>
+                                                        </div>
+                                                    </div>
+                                                </div>                                                
+                                                <div class="mt-2">
+                                                    <label for=""><span x-show="childIndex >= 1" x-text="'#'+(childIndex+1)"></span> Child's Date of birth</label>
+                                                    <input type="date" x-model="formData.sec3.childDetails[childIndex].dob" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" max="2018-12-31">                                                    
+                                                </div>                                                
+                                                <button x-show="childIndex >= 1" @click="removeChild(childIndex)" class="bg-red-500 px-6 py-2 text-white hover:bg-red-600">Remove Child</button>
+                                            </div>
+                                        </template>
+    
+                                        <div>
+                                            <button x-show="formData.sec3.numChildren < 5" @click="addChild($event)" class="bg-green-500 px-6 py-2 text-white hover:bg-green-600">Add Child</button>
+                                        </div>
+                                    </div>
+    
+                                    <!-- Grand Child -->    
+                                    <div x-show="activeSubForm === 'grandChildren'">
+                                        <h1 class="text-4xl text-blue-500">Identify Grandchildren</h1>
+    
+                                        <p>Identifying all of your grandchildren is optional. It allows you to choose them later in this wizard if you decide to leave them some of your assets. If you do not plan on leaving anything specific to your grandChildren, you can simply skip this page.</p>
+    
+                                        <p>* = required information</p>
+                                        
+                                        <div>
+                                            <div>
+                                                <input type="radio" value="1" x-model="formData.sec3.grandChildrenDirect" id="">
+                                                <label for="">I have grandchildren, but I am NOT leaving them something directly in my Will</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" value="2" x-model="formData.sec3.grandChildrenDirect" id="">
+                                                <label for="">I have grandchildren, and I MIGHT OR MIGHT NOT leave them something in my Will</label>
+                                            </div>
+                                        </div>
+                                        <template x-for="(item,childIndex) in formData.sec3.grandChildDetails">
+                                            <div class="mt-8 mb-8">
+                                                <div>
+                                                    <label for=""><span x-show="childIndex >= 1" x-text="'#'+(childIndex+1)"></span> Grandchild's Full Name</label>
+                                                    <input x-model="formData.sec3.grandChildDetails[childIndex].name" type="text">
+                                                </div>
+            
+                                                <div>
+                                                    <p class="form-label mt-2">Relationship:<span class="text-red-500">*</span></p>
+                                                    <div class="flex flex-col">
+                                                        <div>
+                                                            <input type="radio" :name="'relationGrandChild'+childIndex" x-model="formData.sec3.grandChildDetails[childIndex].relation" value="1" class="mr-4"><label for="">Son</label>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" :name="'relationGrandChild'+childIndex" x-model="formData.sec3.grandChildDetails[childIndex].relation" value="2" class="mr-4"><label for="">Daughter</label>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" :name="'relationGrandChild'+childIndex" x-model="formData.sec3.grandChildDetails[childIndex].relation" value="3" class="mr-4"><label for="">Gender Neutral Child</label>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" :name="'relationGrandChild'+childIndex" x-model="formData.sec3.grandChildDetails[childIndex].relation" value="4" class="mr-4"><label for="">Stepson</label>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" :name="'relationGrandChild'+childIndex" x-model="formData.sec3.grandChildDetails[childIndex].relation" value="5" class="mr-4"><label for="">Stepdaughter</label>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" :name="'relationGrandChild'+childIndex" x-model="formData.sec3.grandChildDetails[childIndex].relation" value="6" class="mr-4"><label for="">Gender neutral stepchild</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <label for=""><span x-show="childIndex >= 1" x-text="'#'+(childIndex+1)"></span> Child's Date of birth</label>
+                                                    <input type="date" x-model="formData.sec3.grandChildDetails[childIndex].dob" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" max="2018-12-31">                                                    
+                                                </div>  
+                                                <button x-show="childIndex >= 1" @click="removeGrandChild(childIndex)" class="bg-red-500 px-6 py-2 text-white hover:bg-red-600">Remove Child</button>
+                                            </div>
+                                        </template>
+    
+                                        <div>
+                                            <button x-show="formData.sec3.numChildren < 5" @click="addGrandChild($event)" class="bg-green-500 px-6 py-2 text-white hover:bg-green-600">Add Child</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Deceased Members -->
+                                    <div x-show="activeSubForm === 'deceased'">
+                                        <div>
+                                            <h1 class="text-4xl text-blue-500">Deceased Family Members</h1>
+                                            <p>If any members of your immediate family (a spouse or a child) have passed away, you should list them here.</p>
+                                            <div>
+                                                <div>
+                                                    <input type="radio" value="1" x-model="formData.sec3.deceased" id="">
+                                                    <label for="">I DO NOT have any deceased family members</label>
+                                                </div>
+                                                <div>
+                                                    <input type="radio" value="2" x-model="formData.sec3.deceased" id="">
+                                                    <label for="">I have deceased family members</label>
+                                                </div>                                                
+                                            </div>
+                                            <div x-show="formData.sec3.deceased==2">
+                                                <div class="mt-6">
+                                                    <template x-for="(item,childIndex) in formData.sec3.deceasedDetails">
+                                                        <div class="mt-8 mb-8">
+                                                            <p><span class="text-red-500">*</span> = required information</p>
+                                                            <div>
+                                                                <label for=""><span x-show="childIndex >= 1" x-text="'#'+(childIndex+1)"></span> Member's Full Name</label>
+                                                                <input x-model="formData.sec3.deceasedDetails[childIndex].name" type="text">
+                                                            </div>
+                        
+                                                            <div>                                                                
+                                                                <label for="">Gender pronoun</label>
+                                                                <select id="" x-model="formData.sec3.deceasedDetails[childIndex].gender">
+                                                                    <option value="">[make selection]</option>
+                                                                    <option value="Male (he/his)">Male (he/his)</option>
+                                                                    <option value="Female (she/her)">Female (she/her)</option>
+                                                                    <option value="Neutral (they/their)">Neutral (they/their)</option>                                                                    
+                                                                </select>
+                                                                <small x-text="validateError.gender" class="text-red-500 block"></small>
+                                                            </div>
+                                                            <div class="mt-2">
+                                                                <label for="">Relationship</label>
+                                                                <select id="" x-model="formData.sec3.deceasedDetails[childIndex].relation">
+                                                                    <option value="">[make selection]</option>
+                                                                    <option value="wife">wife</option>
+                                                                    <option value="husband">husband</option>
+                                                                    <option value="common law wife">common law wife</option>
+                                                                    <option value="common law husband">common law husband</option>
+                                                                    <option value="partner">partner</option>
+                                                                    <option value="son">son</option>
+                                                                    <option value="daughter">daughter</option>
+                                                                    
+                                                                </select>
+                                                                <small x-text="validateError.gender" class="text-red-500 block"></small>
+                                                            </div>  
+                                                            <button x-show="childIndex >= 1" @click="removeDeceased(childIndex)" class="bg-red-500 px-6 py-2 text-white hover:bg-red-600">Remove</button>
+                                                        </div>
+                                                    </template>
+                                                    <div>
+                                                        <button x-show="formData.sec3.numChildren < 5" @click="addDeceased($event)" class="bg-green-500 px-6 py-2 text-white hover:bg-green-600">Add</button>
+                                                    </div>                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                <div x-show="activeForm === 'sec4'">
+                                    <div>
+                                        <h1 class="text-4xl text-blue-500">Identify Others to be Included in your Will</h1>                                        
+                                    </div>
+                                    <div>
+                                        <p class="mb-2">If there are other people or organizations to be included in your Will, you can name them now. You can also add more names later, as you are working through this wizard.</p>
+                                        <p class="mb-2">You should not include your spouse/partner, children, or grandchildren on this page, because they would have been named in previous pages of this wizard.</p>
+                                        <p class="mb-2">By listing the beneficiaries here, it makes it easier to select them later on for receiving a bequest. You are also able to set up a trust for them. They do not appear in your Will unless they are specifically selected in Section 7.</p>                                        
+                                    </div>
+                                    <div>                                      
+                                        <div>
+                                            <input type="radio" value="1" name="otherBeneficiaries" x-model="formData.sec4.otherBeneficiaries" id="">
+                                            <label for="otherBeneficiaries">I have no other beneficiaries, or will add them later</label>
+                                        </div>
+                                        <div>
+                                            <input type="radio" value="2" name="otherBeneficiaries" x-model="formData.sec4.otherBeneficiaries" id="">
+                                            <label for="otherBeneficiaries">I would like to add beneficiaries now</label>
+                                        </div>                                                                                                                             
+                                    </div>
+                                    <div x-show="formData.sec4.otherBeneficiaries==2">
+                                        <div class="mt-6">
+                                            <template x-for="(item,childIndex) in formData.sec4.beneficiaryDetails">
+                                                <div class="mt-8 mb-8">
+                                                    <p><span class="text-red-500">*</span> = required information</p>
+                                                    <div>
+                                                        <p class="form-label mt-2"><span class="text-red-500">*</span> Gender/Type:</p>
+                                                        <div class="flex flex-col">
+                                                            <div>
+                                                                <input type="radio" :name="'relationBeneficiary'+childIndex" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="1" class="mr-4"><label for="">Male</label>
+                                                            </div>
+                                                            <div>
+                                                                <input type="radio" :name="'relationBeneficiary'+childIndex" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="2" class="mr-4"><label for="">Female</label>
+                                                            </div>
+                                                            <div>
+                                                                <input type="radio" :name="'relationBeneficiary'+childIndex" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="3" class="mr-4"><label for="">Neutral</label>
+                                                            </div>
+                                                            <div>
+                                                                <input type="radio" :name="'relationBeneficiary'+childIndex" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="4" class="mr-4"><label for="">Charity/Org</label>
+                                                            </div>
+                                                            <div>
+                                                                <input type="radio" :name="'relationBeneficiary'+childIndex" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="5" class="mr-4"><label for="">Group</label>
+                                                            </div>                                                            
+                                                        </div>
+                                                    </div> 
+                                                    <div>
+                                                        <div class="mt-2">
+                                                            <label for=""><span class="text-red-500">*</span> Full Name</label>
+                                                            <input x-model="formData.sec4.beneficiaryDetails[childIndex].name" type="text">
+                                                        </div>
+                                                        <div class="mt-2">
+                                                            <label for=""><span class="text-red-500">*</span> Relationship</label>
+                                                            <input x-model="formData.sec4.beneficiaryDetails[childIndex].relation" type="text">
+                                                        </div>
+                                                        <div class="mt-2">
+                                                            <label for=""><span class="text-red-500">*</span> Address</label>
+                                                            <input x-model="formData.sec4.beneficiaryDetails[childIndex].address" type="text">
+                                                        </div>
+                                                    </div>
+                                                    <button x-show="childIndex >= 1" @click="removeBeneficiary(childIndex)" class="bg-red-500 px-6 py-2 text-white hover:bg-red-600">Remove</button>                                                   
+                                                </div>
+                                            </template>
+                                            <div>
+                                                <button x-show="formData.sec4.numBeneficiaries < 5" @click="addBeneficiary($event)" class="bg-green-500 px-6 py-2 text-white hover:bg-green-600">Add</button>
+                                            </div>                                                    
+                                        </div>
+                                    </div>
+                                </div>
+                                <div x-show="activeForm === 'sec5'">
+                                    <div>
+                                        <h1 class="text-4xl text-blue-500">Identify Guardians for Minor Children</h1>
+                                    </div>
+                                    <!-- Minor Children Details -->
+                                    <div x-show="hasMinorChild()">
+                                        <div>
+                                            <p>It is very important that you name a guardian for each of your minor children. This person will be responsible for the care of your child if there are no parents available.</p>
+                                        </div>
+                                        <div class="mt-2">
+                                            <div class="flex justify-start gap-6 border-2">
+                                                <div class="w-4/12 p-4">
+                                                    <div>
+                                                        <p>Child's name	</p>
+                                                    </div>                                                    
+                                                </div>
+                                                <div class="w-8/12 border-l-2 p-4">
+                                                    <div>
+                                                        <p>Guardians</p>
+                                                    </div>                                                    
+                                                </div>                                                
+                                            </div>
+                                            <template x-for="(item,childIndex) in minorChildren">
+                                                <div class="flex justify-start gap-6 border-2">
+                                                    <div class="w-4/12 p-4">
+                                                        <div>
+                                                            <p x-text="item"></p>
+                                                        </div>                                                    
+                                                    </div>
+                                                    <div class="w-8/12 border-l-2 p-4">
+                                                        <div>
+                                                            <div>
+                                                                <input type="hidden" x-model="formData.sec5.guardianDetails[childIndex].childName">
+                                                                <div>
+                                                                    <label for="">Personal guardian's full name:</label>
+                                                                    <input x-model="formData.sec5.guardianDetails[childIndex].name" type="text">
+                                                                </div>
+                                                                <div>
+                                                                    <label for="">Reason for choosing this guardian:</label>
+                                                                    <input x-model="formData.sec5.guardianDetails[childIndex].reason" type="text">
+                                                                </div>
+                                                                <div>
+                                                                    <label for="">Alternate guardian's full name:</label>
+                                                                    <input x-model="formData.sec5.guardianDetails[childIndex].alterName" type="text">
+                                                                </div>
+                                                            </div>
+                                                        </div>                                                    
+                                                    </div>                                                
+                                                </div>    
+                                            </template>                                        
+                                        </div>
+                                    </div>
+                                    <!-- No Minor Children -->
+                                    <div x-show="!hasMinorChild()">
+                                        <div>
+                                            <p class="mb-2">You have indicated that you have no minor children, so you do not need to identify any guardians.</p>
+                                            <p class="mb-2">Click "NEXT" to continue...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div x-show="activeForm === 'sec6'">
+                                    <!-- Sub section intro of section 6 -->
+                                    <div x-show="activeSubForm === 'intro'">
+                                        <div>
+                                            <h1 class="text-4xl text-blue-500">Executor</h1>
+                                        </div>
+                                        <div>
+                                            <p class="mb-2">
+                                                Here you name the person you would like to be the executor of your Will. This person will be responsible for carrying out your wishes as specified in your Will, including the distribution of your possessions to your beneficiaries.
+                                            </p>
+                                            <p class="mb-2">
+                                                You must identify somebody here. Although it is common to list a single executor, you may name up to 3 executors who must then work together to carry out your wishes. On the next page you will be able to name alternate  executors to take the place of those unable to serve.
+                                            </p>
+                                            <p class="mb-2">
+                                                We understand that you may need to talk to other people before naming an executor. However, if you are stuck, you can name a person now and come back and change it later.
+                                            </p>
+                                            <p class="mb-2">
+                                                I would like the following to be the executor of my Will:
+                                            </p>
+                                            <p class="mb-2">
+                                                <span class="text-red-500">*</span> = required information
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <template x-for="(item,childIndex) in formData.sec6.executorDetails">
+                                                <div class="mb-4">
+                                                    <div>
+                                                        <h2 x-text="getNumFormat(childIndex+1)+' Executor'" class="text-2xl text-blue-500"></h2>
                                                     </div>
                                                     <div>
-                                                        <input x-model="formData.sec2.gender" type="radio" name="gender" value="2" class="mr-4" @change="validate('gender')"><label for="">Female (she/her)</label>
+                                                        <label for=""><span class="text-red-500">*</span> Full Name</label>
+                                                        <input x-model="formData.sec6.executorDetails[childIndex].name" type="text">
                                                     </div>
                                                     <div>
-                                                        <input x-model="formData.sec2.gender" type="radio" name="gender" value="3" class="mr-4" @change="validate('gender')"><label for="">Neutral (they/their)</label>
+                                                        <label for=""><span class="text-red-500">*</span> Relationship</label>
+                                                        <input x-model="formData.sec6.executorDetails[childIndex].relation" type="text">
                                                     </div>
-                                                    <small x-text="validateError.gender" class="text-red-500 block"></small>
+                                                    <div>
+                                                        <label for=""><span class="text-red-500">*</span> Address</label>
+                                                        <input x-model="formData.sec6.executorDetails[childIndex].address" type="text">
+                                                    </div>
+                                                    <button @click="removeExecutor(childIndex)" class="mt-2 bg-red-500 px-6 py-2 text-white hover:bg-red-600">
+                                                        <span x-text="'DELETE ' + getNumFormat(childIndex+1) + ' EXECUTOR'"></span>
+                                                    </button> 
+                                                </div>
+                                            </template>
+                                            <div>
+                                                <button x-show="formData.sec6.numExecutor < 5" @click="addExecutor($event)" class="mt-2 bg-green-500 px-6 py-2 text-white hover:bg-green-600">Add</button>
+                                            </div>
+                                        </div>
+                                    </div>
 
+                                    <!-- Sub section Alternate Executor of section 6 -->
+                                    <div x-show="activeSubForm === 'alterExecutor'">
+                                        <div>
+                                            <h1 class="text-4xl text-blue-500">Alternate Executor</h1>
+                                        </div>
+                                        <div x-show="getNumExecutors()==1">
+                                            <p class="mb-2">On the previous page, I identified a single person (<span x-text="getExecutorNames()"></span>) to be the executor of my Will.</p>                                            
+                                            <p class="mb-2">If for some reason <span x-text="getExecutorNames()"></span> is unable to serve as the executor of my Will:</p>
+                                        </div>
+                                        <div x-show="getNumExecutors()>1">
+                                            <p class="mb-2">On the previous page, I identified multiple executors (<span x-text="getExecutorNames()"></span>), who must work together to carry out my wishes.</p>                                            
+                                            <p class="mb-2">I choose:</p>
+                                        </div>
+                                        <div>
+                                            <div class="flex flex-col">
+                                                <div>
+                                                    <input type="radio" name="alterOptions" x-model="formData.sec6.alterOptions" id="alterOpt1" value="1" class="mr-4"><label for="alterOpt1">NO ALTERNATES --- If for some reason ANY or ALL of these people are unable to serve, I do not want to identify any alternates</label>
+                                                </div>
+                                                <div>
+                                                    <input type="radio" name="alterOptions" x-model="formData.sec6.alterOptions" id="alterOpt2" value="2" class="mr-4"><label for="alterOpt2">LIST OF REPLACEMENTS --- If for some reason ANY of these people are unable to serve, I would like the following to take their place, in the order listed below:</label>
+                                                </div>
+                                                <div>
+                                                    <input type="radio" name="alterOptions" x-model="formData.sec6.alterOptions" id="alterOpt3" value="3" class="mr-4"><label for="alterOpt3">ALTERNATE PLAN --- If for some reason ALL of these people are unable to serve, I would like the following to take their place (if I identify more than 1 person below, then they must work together to carry out my wishes):</label>
+                                                </div>                                                                                                            
+                                            </div>
+                                            <div x-show="formData.sec6.alterOptions!=1">
+                                                <div class="mt-8">
+                                                    <template x-for="(item,childIndex) in formData.sec6.alterExecutorDetails">
+                                                        <div class="mb-4">
+                                                            <div>
+                                                                <h2 x-text="getNumFormat(childIndex+1)+' Alternate Executor'" class="text-2xl text-blue-500"></h2>
+                                                            </div>
+                                                            <div>
+                                                                <label for=""><span class="text-red-500">*</span> Full Name</label>
+                                                                <input x-model="formData.sec6.alterExecutorDetails[childIndex].name" type="text">
+                                                            </div>
+                                                            <div>
+                                                                <label for=""><span class="text-red-500">*</span> Relationship</label>
+                                                                <input x-model="formData.sec6.alterExecutorDetails[childIndex].relation" type="text">
+                                                            </div>
+                                                            <div>
+                                                                <label for=""><span class="text-red-500">*</span> Address</label>
+                                                                <input x-model="formData.sec6.alterExecutorDetails[childIndex].address" type="text">
+                                                            </div>
+                                                            <button x-show="childIndex>0" @click="removeAlterExecutor(childIndex)" class="mt-2 bg-red-500 px-6 py-2 text-white hover:bg-red-600">
+                                                                <span x-text="'DELETE ' + getNumFormat(childIndex+1) + ' ALTERNATE'"></span>
+                                                            </button> 
+                                                        </div>
+                                                    </template>
+                                                    <div x-show="formData.sec6.numAlterExecutor < 2">
+                                                        <button @click="addAlterExecutor($event)" class="mt-2 bg-green-500 px-6 py-2 text-white hover:bg-green-600">Add</button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                                <div x-show="activeForm === 'sec7'">
+                                    <!-- Sub section intro of section 7 -->
+                                    <div x-show="activeSubForm === 'intro'">
+                                        <div>
+                                            <h1 class="text-4xl text-blue-500">Distribute Your Possessions</h1>
+                                            <p class="italic font-bold">You are now ready to specify how you wish your possessions to be distributed.</p>
+                                            <h2 class="mt-8 italic text-2xl text-blue-500">Remember:</h2>
+                                        </div>
+                                        <div>
+                                            <ul class="list-disc pl-8">
+                                                <li>
+                                                    <p>To reduce the likelihood of your Will being contested in a court of law, be as complete and unambiguous in your answers as possible.</p>
+                                                </li>
+                                                <li>
+                                                    <p>While answering the questions, if you need general assistance on the section, just read the Common Questions which appear on every page. If you don't see the questions, simply click on the big <span class="font-bold text-4xl">?</span> near the top of the page.</p>                                                    
+                                                </li>
+                                                <li>
+                                                   <p>Specific help for parts of a page that may be unclear is available by tapping (or moving your mouse over) the small <span class="font-bold">?</span> symbol which appears next to some questions.</p> 
+                                                </li>
+                                                <li>
+                                                    <p>You can come back at any time to revise your answers and keep your Will up to date, free of charge.</p>
+                                                </li>
+                                            </ul>
+                                            <h2 class="mt-8 text-2xl text-blue-500">Click on the "NEXT" button below to continue.</h2>
+                                        </div>
+                                    </div>
+                                    <!-- Sub section Bequests to Charities of section 7 -->
+                                    <div x-show="activeSubForm === 'charities'">
+                                        <div>
+                                            <h1 class="text-4xl text-blue-500">Bequests to Charities</h1>                                            
+                                        </div>
+                                        <div>
+                                            <div class="mt-4">
+                                                <p class="mb-2">
+                                                Before we get started with distributing your possessions, have you given any thought to whether you would like to leave something to charity?
+                                                </p>
+                                                <p class="mb-2">
+                                                Many people like to leave a gift to charity in their Will because they care about important causes. Do you want to make a gift to charity in your Will to support causes that have been important in your life? If you wish, you can use this page to leave a fixed sum, a specific item, or a percentage of your estate to one or more specific charities.
+                                                </p>                                            
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <div>
+                                                    <input type="radio" name="charitableDonation" x-model="formData.sec7.charitableDonation" id="charitableDonation1" value="1" class="mr-4"><label for="charitableDonation1">I do not want to specify a charitable donation in my Will.</label>
+                                                </div>
+                                                <div>
+                                                    <input type="radio" name="charitableDonation" x-model="formData.sec7.charitableDonation" id="charitableDonation2" value="2" class="mr-4"><label for="charitableDonation2">I would like to include a charitable donation in my Will.</label>
+                                                </div>
+                                                <div>
+                                                    <input type="radio" name="charitableDonation" x-model="formData.sec7.charitableDonation" id="charitableDonation3" value="3" class="mr-4"><label for="charitableDonation3">Undecided. Let me come back to this later.</label>
+                                                </div>                                                                                                            
+                                            </div>
+                                            <div x-show="formData.sec7.charitableDonation==2">
+                                                <div>
+                                                    <template x-for="(item,childIndex) in formData.sec7.bequestDetails">
+                                                        <div class="mt-10 flex">
+                                                            <div class="w-2/12 p-4 border-2">
+                                                                <p x-text="childIndex+1"></p>
+                                                            </div>
+                                                            <div class="w-10/12 p-4 border-2 border-l-0">
+                                                                <p><span class="text-red-500">*</span> = required information</p>
+                                                                <label :for="'bequestType'+childIndex">I would like to give</label>
+                                                                <select x-model="formData.sec7.bequestDetails[childIndex].type" :id="'bequestType'+childIndex">                                                            
+                                                                    <option value="1">Specific amount of money</option>
+                                                                    <option value="2">Percentage of my estate</option>
+                                                                    <option value="3">Specific asset (e.g. my car)</option>                                                            
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div x-show="activeForm === 'sec8'"></div>
+                                <div x-show="activeForm === 'sec9'"></div>
+                                <div x-show="activeForm === 'sec10'"></div>
                             </div>
-                            <div x-show="activeForm === 'sec3'">
-                                <div x-show="activeSubForm === 'intro'">
-                                    <p>Family Status</p>
-                                    <p>* = required information</p>
-                                    <div>
-                                        <label for="status">Marital Status</label>
-                                        <select x-model="formData.sec3.status" name="status" id="status" @change="validate('status')" :class="{'border-red-500': validateError.status}">
-                                            <option value="">[make selection]</option>
-                                            <option value="1">single</option>
-                                            <option value="2">married</option>
-                                            <option value="3">separated</option>
-                                            <option value="4">separated, but want my spouse to be the main beneficiary</option>
-                                            <option value="5">divorced</option>
-                                            <option value="6">widowed</option>
-                                            <option value="7">in a civil union / domestic partnership</option>
-                                        </select>
-                                        <small x-text="validateError.status" class="text-red-500 block"></small>
-                                    </div>
-
-                                    <div class="flex flex-col">
-                                        <p>Living Children:</p>
-
-                                        <div>
-                                            <input type="radio" name="children" value="1" class="mr-4" x-model="formData.sec3.children" @change="validate('children')"><label for="">Yes</label>
-                                        </div>
-                                        <div>
-                                            <input type="radio" name="children" value="2" class="mr-4" x-model="formData.sec3.children" @change="validate('children')"><label for="">No</label>
-                                        </div>
-                                        <small x-text="validateError.children" class="text-red-500 block"></small>
-                                    </div>
-
-                                    <div class="flex flex-col">
-                                        <p>Living Grand-Children:</p>
-
-                                        <div>
-                                            <input type="radio" name="grandChildren" value="1" class="mr-4" x-model="formData.sec3.grandChildren" @change="validate('grandChildren')"><label for="">Yes</label>
-                                        </div>
-                                        <div>
-                                            <input type="radio" name="grandChildren" value="2" class="mr-4" x-model="formData.sec3.grandChildren" @change="validate('grandChildren')"><label for="">No</label>
-                                        </div>
-                                        <small x-text="validateError.grandChildren" class="text-red-500 block"></small>
-                                    </div>
-                                </div>
-
-                                <div x-show="activeSubForm === 'partner'">
-                                    <p>Spouse/Partner Details</p>
-                                    <p>* = required information</p>
-
-                                    <div>
-                                        <label for="">Full Name</label>
-                                        <input type="text" name="" id="" x-model="formData.sec3.fullName" @input="validate('fullName')">
-                                        <small x-text="validateError.fullName" class="text-red-500 block"></small>
-                                    </div>
-
-                                    <div>
-                                        <label for="">Relation</label>
-                                        <select name="" id="" x-model="formData.sec3.relation" @change="validate('relation')">
-                                            <option value="">[make selection]</option>
-                                            <option value="wife">wife</option>
-                                            <option value="husband">husband</option>
-                                            <option value="common law wife">common law wife</option>
-                                            <option value="common law husband">common law husband</option>
-                                            <option value="partner">partner</option>
-                                        </select>
-                                        <small x-text="validateError.relation" class="text-red-500 block"></small>
-                                    </div>
-
-                                    <div>
-                                        <p class="form-label mt-2">Gender pronoun:<span class="text-red-500">*</span></p>
-                                        <div class="flex flex-col">
-                                            <div>
-                                                <input type="radio" name="gender" value="1" x-model="formData.sec3.partnerGender" @change="validate('partnerGender')" class="mr-4"><label for="">Male (he/his)</label>
-                                            </div>
-                                            <div>
-                                                <input type="radio" name="gender" value="2" x-model="formData.sec3.partnerGender" @change="validate('partnerGender')" class="mr-4"><label for="">Female (she/her)</label>
-                                            </div>
-                                            <div>
-                                                <input type="radio" name="gender" value="3" x-model="formData.sec3.partnerGender" @change="validate('partnerGender')" class="mr-4"><label for="">Neutral (they/their)</label>
-                                            </div>
-                                            <small x-text="validateError.partnerGender" class="text-red-500 block"></small>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Children -->
-                                <div x-show="activeSubForm === 'children'">
-                                    <p>Identify Children</p>
-                                    <p>* = required information</p>
-
-                                    <div>
-                                        <label for="">Child's Full Name</label>
-                                        <input type="text">
-                                    </div>
-
-                                    <div>
-                                        <p class="form-label mt-2">Relationship:<span class="text-red-500">*</span></p>
-                                        <div class="flex flex-col">
-                                            <div>
-                                                <input type="radio" name="relationship" class="mr-4"><label for="">Son</label>
-                                            </div>
-                                            <div>
-                                                <input type="radio" name="relationship" class="mr-4"><label for="">Daughter</label>
-                                            </div>
-                                            <div>
-                                                <input type="radio" name="relationship" class="mr-4"><label for="">Gender Neutral Child</label>
-                                            </div>
-                                            <div>
-                                                <input type="radio" name="relationship" class="mr-4"><label for="">Stepson</label>
-                                            </div>
-                                            <div>
-                                                <input type="radio" name="relationship" class="mr-4"><label for="">Stepdaughter</label>
-                                            </div>
-                                            <div>
-                                                <input type="radio" name="relationship" class="mr-4"><label for="">Gender neutral stepchild</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p>Date of Birth</p>
-                                        <select name="" id="">
-                                            <option value="">Month</option>
-                                            <option value="January">January</option>
-                                            <option value="February">February</option>
-                                            <option value="March">March</option>
-                                            <option value="April">April</option>
-                                            <option value="May">May</option>
-                                            <option value="June">June</option>
-                                            <option value="July">July</option>
-                                            <option value="August">August</option>
-                                            <option value="September">September</option>
-                                            <option value="October">October</option>
-                                            <option value="November">November</option>
-                                            <option value="December">December</option>
-
-                                        </select>
-
-                                        <select name="" id="">
-                                            <option value="">Day</option>
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4</option>
-                                            <option value="5">5</option>
-                                            <option value="6">6</option>
-                                            <option value="7">7</option>
-                                            <option value="8">8</option>
-                                            <option value="9">9</option>
-                                            <option value="10">10</option>
-                                            <option value="11">11</option>
-                                            <option value="12">12</option>
-                                            <option value="13">13</option>
-                                            <option value="14">14</option>
-                                            <option value="15">15</option>
-                                            <option value="16">16</option>
-                                            <option value="17">17</option>
-                                            <option value="18">18</option>
-                                            <option value="19">19</option>
-                                            <option value="20">20</option>
-                                            <option value="21">21</option>
-                                            <option value="22">22</option>
-                                            <option value="23">23</option>
-                                            <option value="24">24</option>
-                                            <option value="25">25</option>
-                                            <option value="26">26</option>
-                                            <option value="27">27</option>
-                                            <option value="28">28</option>
-                                            <option value="29">29</option>
-                                            <option value="30">30</option>
-                                            <option value="31">31</option>
-                                        </select>
-
-                                        <select name="" id="">
-                                            <option value="">Year</option>
-                                            <option value="1900">1900</option>
-                                            <option value="1901">1901</option>
-                                            <option value="1902">1902</option>
-                                            <option value="1903">1903</option>
-                                            <option value="1904">1904</option>
-                                            <option value="1905">1905</option>
-                                            <option value="1906">1906</option>
-                                            <option value="1907">1907</option>
-                                            <option value="1908">1908</option>
-                                            <option value="1909">1909</option>
-                                            <option value="1910">1910</option>
-                                            <option value="1911">1911</option>
-                                            <option value="1912">1912</option>
-                                            <option value="1913">1913</option>
-                                            <option value="1914">1914</option>
-                                            <option value="1915">1915</option>
-                                            <option value="1916">1916</option>
-                                            <option value="1917">1917</option>
-                                            <option value="1918">1918</option>
-                                            <option value="1919">1919</option>
-                                            <option value="1920">1920</option>
-                                            <option value="1921">1921</option>
-                                            <option value="1922">1922</option>
-                                            <option value="1923">1923</option>
-                                            <option value="1924">1924</option>
-                                            <option value="1925">1925</option>
-                                            <option value="1926">1926</option>
-                                            <option value="1927">1927</option>
-                                            <option value="1928">1928</option>
-                                            <option value="1929">1929</option>
-                                            <option value="1930">1930</option>
-                                            <option value="1931">1931</option>
-                                            <option value="1932">1932</option>
-                                            <option value="1933">1933</option>
-                                            <option value="1934">1934</option>
-                                            <option value="1935">1935</option>
-                                            <option value="1936">1936</option>
-                                            <option value="1937">1937</option>
-                                            <option value="1938">1938</option>
-                                            <option value="1939">1939</option>
-                                            <option value="1940">1940</option>
-                                            <option value="1941">1941</option>
-                                            <option value="1942">1942</option>
-                                            <option value="1943">1943</option>
-                                            <option value="1944">1944</option>
-                                            <option value="1945">1945</option>
-                                            <option value="1946">1946</option>
-                                            <option value="1947">1947</option>
-                                            <option value="1948">1948</option>
-                                            <option value="1949">1949</option>
-                                            <option value="1950">1950</option>
-                                            <option value="1951">1951</option>
-                                            <option value="1952">1952</option>
-                                            <option value="1953">1953</option>
-                                            <option value="1954">1954</option>
-                                            <option value="1955">1955</option>
-                                            <option value="1956">1956</option>
-                                            <option value="1957">1957</option>
-                                            <option value="1958">1958</option>
-                                            <option value="1959">1959</option>
-                                            <option value="1960">1960</option>
-                                            <option value="1961">1961</option>
-                                            <option value="1962">1962</option>
-                                            <option value="1963">1963</option>
-                                            <option value="1964">1964</option>
-                                            <option value="1965">1965</option>
-                                            <option value="1966">1966</option>
-                                            <option value="1967">1967</option>
-                                            <option value="1968">1968</option>
-                                            <option value="1969">1969</option>
-                                            <option value="1970">1970</option>
-                                            <option value="1971">1971</option>
-                                            <option value="1972">1972</option>
-                                            <option value="1973">1973</option>
-                                            <option value="1974">1974</option>
-                                            <option value="1975">1975</option>
-                                            <option value="1976">1976</option>
-                                            <option value="1977">1977</option>
-                                            <option value="1978">1978</option>
-                                            <option value="1979">1979</option>
-                                            <option value="1980">1980</option>
-                                            <option value="1981">1981</option>
-                                            <option value="1982">1982</option>
-                                            <option value="1983">1983</option>
-                                            <option value="1984">1984</option>
-                                            <option value="1985">1985</option>
-                                            <option value="1986">1986</option>
-                                            <option value="1987">1987</option>
-                                            <option value="1988">1988</option>
-                                            <option value="1989">1989</option>
-                                            <option value="1990">1990</option>
-                                            <option value="1991">1991</option>
-                                            <option value="1992">1992</option>
-                                            <option value="1993">1993</option>
-                                            <option value="1994">1994</option>
-                                            <option value="1995">1995</option>
-                                            <option value="1996">1996</option>
-                                            <option value="1997">1997</option>
-                                            <option value="1998">1998</option>
-                                            <option value="1999">1999</option>
-                                            <option value="2000">2000</option>
-                                            <option value="2001">2001</option>
-                                            <option value="2002">2002</option>
-                                            <option value="2003">2003</option>
-                                            <option value="2004">2004</option>
-                                            <option value="2005">2005</option>
-                                            <option value="2006">2006</option>
-                                            <option value="2007">2007</option>
-                                            <option value="2008">2008</option>
-                                            <option value="2009">2009</option>
-                                            <option value="2010">2010</option>
-                                            <option value="2011">2011</option>
-                                            <option value="2012">2012</option>
-                                            <option value="2013">2013</option>
-                                            <option value="2014">2014</option>
-                                            <option value="2015">2015</option>
-                                            <option value="2016">2016</option>
-                                            <option value="2017">2017</option>
-                                            <option value="2018">2018</option>
-                                            <option value="2019">2019</option>
-                                            <option value="2020">2020</option>
-                                            <option value="2021">2021</option>
-                                            <option value="2022">2022</option>
-                                            <option value="2023">2023</option>
-                                            <option value="2024">2024</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <button>Add Child</button>
-                                    </div>
-                                </div>
-
-                                <!-- Grand Child -->
-
-                                <div x-show="activeSubForm === 'grandChildren'">
-                                    <p>Identify grandChildren</p>
-
-                                    <p>Identifying all of your grandChildren is optional. It allows you to choose them later in this wizard if you decide to leave them some of your assets. If you do not plan on leaving anything specific to your grandChildren, you can simply skip this page.</p>
-
-                                    <p>* = required information</p>
-
-                                    <div>
-                                        <div>
-                                            <input type="radio" name="grand" id="">
-                                            <label for="">I have grandChildren, but I am NOT leaving them something directly in my Will</label>
-                                        </div>
-                                        <div>
-                                            <input type="radio" name="grand" id="">
-                                            <label for="">I have grandChildren, and I MIGHT OR MIGHT NOT leave them something in my Will</label>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label for="">Grandchild's Full Name</label>
-                                        <input type="text">
-                                    </div>
-
-                                    <div>
-                                        <p class="form-label mt-2">Relationship:<span class="text-red-500">*</span></p>
-                                        <div class="flex flex-col">
-                                            <div>
-                                                <input type="radio" name="relationship" class="mr-4"><label for="">Son</label>
-                                            </div>
-                                            <div>
-                                                <input type="radio" name="relationship" class="mr-4"><label for="">Daughter</label>
-                                            </div>
-                                            <div>
-                                                <input type="radio" name="relationship" class="mr-4"><label for="">Gender Neutral Child</label>
-                                            </div>
-                                            <div>
-                                                <input type="radio" name="relationship" class="mr-4"><label for="">Stepson</label>
-                                            </div>
-                                            <div>
-                                                <input type="radio" name="relationship" class="mr-4"><label for="">Stepdaughter</label>
-                                            </div>
-                                            <div>
-                                                <input type="radio" name="relationship" class="mr-4"><label for="">Gender neutral stepchild</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p>Date of Birth</p>
-                                        <select name="" id="">
-                                            <option value="">Month</option>
-                                            <option value="January">January</option>
-                                            <option value="February">February</option>
-                                            <option value="March">March</option>
-                                            <option value="April">April</option>
-                                            <option value="May">May</option>
-                                            <option value="June">June</option>
-                                            <option value="July">July</option>
-                                            <option value="August">August</option>
-                                            <option value="September">September</option>
-                                            <option value="October">October</option>
-                                            <option value="November">November</option>
-                                            <option value="December">December</option>
-
-                                        </select>
-
-                                        <select name="" id="">
-                                            <option value="">Day</option>
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4</option>
-                                            <option value="5">5</option>
-                                            <option value="6">6</option>
-                                            <option value="7">7</option>
-                                            <option value="8">8</option>
-                                            <option value="9">9</option>
-                                            <option value="10">10</option>
-                                            <option value="11">11</option>
-                                            <option value="12">12</option>
-                                            <option value="13">13</option>
-                                            <option value="14">14</option>
-                                            <option value="15">15</option>
-                                            <option value="16">16</option>
-                                            <option value="17">17</option>
-                                            <option value="18">18</option>
-                                            <option value="19">19</option>
-                                            <option value="20">20</option>
-                                            <option value="21">21</option>
-                                            <option value="22">22</option>
-                                            <option value="23">23</option>
-                                            <option value="24">24</option>
-                                            <option value="25">25</option>
-                                            <option value="26">26</option>
-                                            <option value="27">27</option>
-                                            <option value="28">28</option>
-                                            <option value="29">29</option>
-                                            <option value="30">30</option>
-                                            <option value="31">31</option>
-                                        </select>
-
-                                        <select name="" id="">
-                                            <option value="">Year</option>
-                                            <option value="1900">1900</option>
-                                            <option value="1901">1901</option>
-                                            <option value="1902">1902</option>
-                                            <option value="1903">1903</option>
-                                            <option value="1904">1904</option>
-                                            <option value="1905">1905</option>
-                                            <option value="1906">1906</option>
-                                            <option value="1907">1907</option>
-                                            <option value="1908">1908</option>
-                                            <option value="1909">1909</option>
-                                            <option value="1910">1910</option>
-                                            <option value="1911">1911</option>
-                                            <option value="1912">1912</option>
-                                            <option value="1913">1913</option>
-                                            <option value="1914">1914</option>
-                                            <option value="1915">1915</option>
-                                            <option value="1916">1916</option>
-                                            <option value="1917">1917</option>
-                                            <option value="1918">1918</option>
-                                            <option value="1919">1919</option>
-                                            <option value="1920">1920</option>
-                                            <option value="1921">1921</option>
-                                            <option value="1922">1922</option>
-                                            <option value="1923">1923</option>
-                                            <option value="1924">1924</option>
-                                            <option value="1925">1925</option>
-                                            <option value="1926">1926</option>
-                                            <option value="1927">1927</option>
-                                            <option value="1928">1928</option>
-                                            <option value="1929">1929</option>
-                                            <option value="1930">1930</option>
-                                            <option value="1931">1931</option>
-                                            <option value="1932">1932</option>
-                                            <option value="1933">1933</option>
-                                            <option value="1934">1934</option>
-                                            <option value="1935">1935</option>
-                                            <option value="1936">1936</option>
-                                            <option value="1937">1937</option>
-                                            <option value="1938">1938</option>
-                                            <option value="1939">1939</option>
-                                            <option value="1940">1940</option>
-                                            <option value="1941">1941</option>
-                                            <option value="1942">1942</option>
-                                            <option value="1943">1943</option>
-                                            <option value="1944">1944</option>
-                                            <option value="1945">1945</option>
-                                            <option value="1946">1946</option>
-                                            <option value="1947">1947</option>
-                                            <option value="1948">1948</option>
-                                            <option value="1949">1949</option>
-                                            <option value="1950">1950</option>
-                                            <option value="1951">1951</option>
-                                            <option value="1952">1952</option>
-                                            <option value="1953">1953</option>
-                                            <option value="1954">1954</option>
-                                            <option value="1955">1955</option>
-                                            <option value="1956">1956</option>
-                                            <option value="1957">1957</option>
-                                            <option value="1958">1958</option>
-                                            <option value="1959">1959</option>
-                                            <option value="1960">1960</option>
-                                            <option value="1961">1961</option>
-                                            <option value="1962">1962</option>
-                                            <option value="1963">1963</option>
-                                            <option value="1964">1964</option>
-                                            <option value="1965">1965</option>
-                                            <option value="1966">1966</option>
-                                            <option value="1967">1967</option>
-                                            <option value="1968">1968</option>
-                                            <option value="1969">1969</option>
-                                            <option value="1970">1970</option>
-                                            <option value="1971">1971</option>
-                                            <option value="1972">1972</option>
-                                            <option value="1973">1973</option>
-                                            <option value="1974">1974</option>
-                                            <option value="1975">1975</option>
-                                            <option value="1976">1976</option>
-                                            <option value="1977">1977</option>
-                                            <option value="1978">1978</option>
-                                            <option value="1979">1979</option>
-                                            <option value="1980">1980</option>
-                                            <option value="1981">1981</option>
-                                            <option value="1982">1982</option>
-                                            <option value="1983">1983</option>
-                                            <option value="1984">1984</option>
-                                            <option value="1985">1985</option>
-                                            <option value="1986">1986</option>
-                                            <option value="1987">1987</option>
-                                            <option value="1988">1988</option>
-                                            <option value="1989">1989</option>
-                                            <option value="1990">1990</option>
-                                            <option value="1991">1991</option>
-                                            <option value="1992">1992</option>
-                                            <option value="1993">1993</option>
-                                            <option value="1994">1994</option>
-                                            <option value="1995">1995</option>
-                                            <option value="1996">1996</option>
-                                            <option value="1997">1997</option>
-                                            <option value="1998">1998</option>
-                                            <option value="1999">1999</option>
-                                            <option value="2000">2000</option>
-                                            <option value="2001">2001</option>
-                                            <option value="2002">2002</option>
-                                            <option value="2003">2003</option>
-                                            <option value="2004">2004</option>
-                                            <option value="2005">2005</option>
-                                            <option value="2006">2006</option>
-                                            <option value="2007">2007</option>
-                                            <option value="2008">2008</option>
-                                            <option value="2009">2009</option>
-                                            <option value="2010">2010</option>
-                                            <option value="2011">2011</option>
-                                            <option value="2012">2012</option>
-                                            <option value="2013">2013</option>
-                                            <option value="2014">2014</option>
-                                            <option value="2015">2015</option>
-                                            <option value="2016">2016</option>
-                                            <option value="2017">2017</option>
-                                            <option value="2018">2018</option>
-                                            <option value="2019">2019</option>
-                                            <option value="2020">2020</option>
-                                            <option value="2021">2021</option>
-                                            <option value="2022">2022</option>
-                                            <option value="2023">2023</option>
-                                            <option value="2024">2024</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <button>Add Grand Child</button>
-                                    </div>
-                                </div>
-                                <div x-show="activeSubForm === 'deceased'">
-                                    <h1>Deceased Family Members</h1>
-                                </div>
-                            </div>
-                            <div x-show="activeForm === 'sec4'"></div>
-                            <div x-show="activeForm === 'sec5'"></div>
-                            <div x-show="activeForm === 'sec6'"></div>
-                            <div x-show="activeForm === 'sec7'"></div>
-                            <div x-show="activeForm === 'sec8'"></div>
-                            <div x-show="activeForm === 'sec9'"></div>
-                            <div x-show="activeForm === 'sec10'"></div>
                         </div>
                     </div>
                 </div>
@@ -922,15 +971,15 @@ if (is_user_logged_in()) {
             </div>
 
         </div>
-    </div>
+    </div>    
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('data', () => ({
                 child: 0,
-                activeForm: 'sec3',
+                activeForm: 'home',
                 progressValue:1,
                 activeSubForm: 'intro',
-                checkSubSec: ['sec3'],
+                checkSubSec: ['sec3','sec6','sec7'],
                 allPages: [
                     'sec1',
                     'sec2',
@@ -945,33 +994,13 @@ if (is_user_logged_in()) {
                 ],
                 allSubPages: {
                     'sec3': ['intro', 'partner', 'children', 'grandChildren', 'deceased'],
+                    'sec6': ['intro','alterExecutor'],
+                    'sec7': ['intro','charities'],
                 },
                 mainForm:false,
                 selectedOpt: 1,
 
-                formData: {
-                    sec2: {
-                        prefix: '',
-                        suffix: '',
-                        firstName: '',
-                        middleName: '',
-                        lastName: '',
-                        email: '',
-                        gender: '',
-                        country: '',
-                        state: '',
-                        city: ''
-                    },
-
-                    sec3: {
-                        status: '',
-                        children: '',
-                        grandChildren: '',
-                        fullName: '',
-                        relation: '',
-                        partnerGender: ''
-                    },
-                },
+                formData : willsFormData,
 
                 qna: {
                     home:{},createMod:{},
@@ -990,6 +1019,34 @@ if (is_user_logged_in()) {
                         'Question 5': 'Answer 5',
                     },
                     sec3: {
+                        'Question 1': 'Answer 1',
+                        'Question 2': 'Answer 2',
+                        'Question 3': 'Answer 3',
+                        'Question 4': 'Answer 4',
+                        'Question 5': 'Answer 5',
+                    },
+                    sec4: {
+                        'Question 1': 'Answer 1',
+                        'Question 2': 'Answer 2',
+                        'Question 3': 'Answer 3',
+                        'Question 4': 'Answer 4',
+                        'Question 5': 'Answer 5',
+                    },
+                    sec5: {
+                        'Question 1': 'Answer 1',
+                        'Question 2': 'Answer 2',
+                        'Question 3': 'Answer 3',
+                        'Question 4': 'Answer 4',
+                        'Question 5': 'Answer 5',
+                    },
+                    sec6: {
+                        'Question 1': 'Answer 1',
+                        'Question 2': 'Answer 2',
+                        'Question 3': 'Answer 3',
+                        'Question 4': 'Answer 4',
+                        'Question 5': 'Answer 5',
+                    },
+                    sec7: {
                         'Question 1': 'Answer 1',
                         'Question 2': 'Answer 2',
                         'Question 3': 'Answer 3',
@@ -1037,7 +1094,7 @@ if (is_user_logged_in()) {
                             required: true,
                         },
                         email: {
-                            max: 20,
+                            max: 50,
                             min: 2,
                             email: true,
                             required: true,
@@ -1082,12 +1139,112 @@ if (is_user_logged_in()) {
                             partnerGender: {
                                 required: true,
                             }
-                        }
+                        },
+                        children: {
+
+                        },
+                        grandChildren: {
+
+                        },
+                        deceased: {
+                            
+                        },
+                    },
+                    sec6: {
+                        intro: {
+
+                        },
+                        alterExecutor: {
+
+                        },
+                    },
+                    sec7: {
+                        intro: {
+
+                        },
+                        charities: {
+
+                        },
                     }
                 },
-
+                addChild(e){
+                    this.formData.sec3.numChildren++
+                    this.formData.sec3.childDetails.push({'name':'','relation':'','dob':''})
+                },
+                removeChild(index) {
+                    this.formData.sec3.childDetails.splice(index, 1);
+                    this.formData.sec3.numChildren--
+                },
+                addGrandChild(e){
+                    this.formData.sec3.numGrandChildren++
+                    this.formData.sec3.grandChildDetails.push({'name':'','relation':'','dob':''})
+                },
+                removeGrandChild(index) {
+                    this.formData.sec3.grandChildDetails.splice(index, 1);
+                    this.formData.sec3.numGrandChildren--
+                },
+                addDeceased(e){
+                    this.formData.sec3.numDeceased++
+                    this.formData.sec3.deceasedDetails.push({'name':'','gender':'','relation':''})
+                },
+                removeDeceased(index) {
+                    this.formData.sec3.deceasedDetails.splice(index, 1);
+                    this.formData.sec3.numDeceased--
+                },
+                addBeneficiary(e){
+                    this.formData.sec4.numBeneficiary++
+                    this.formData.sec4.beneficiaryDetails.push({'gender':'','name':'','relation':'','address':''})
+                },
+                removeBeneficiary(index) {
+                    this.formData.sec4.beneficiaryDetails.splice(index, 1);
+                    this.formData.sec4.numBeneficiary--
+                },
+                addExecutor(e){
+                    this.formData.sec6.numExecutor++
+                    this.formData.sec6.executorDetails.push({'name':'','relation':'','address':''})
+                },
+                removeExecutor(index) {
+                    this.formData.sec6.executorDetails.splice(index, 1);
+                    this.formData.sec6.numExecutor--
+                },
+                addAlterExecutor(e){
+                    this.formData.sec6.numAlterExecutor++
+                    this.formData.sec6.alterExecutorDetails.push({'name':'','relation':'','address':''})
+                },
+                removeAlterExecutor(index) {
+                    this.formData.sec6.alterExecutorDetails.splice(index, 1);
+                    this.formData.sec6.numAlterExecutor--
+                },
+                getNumFormat(number){
+                    switch (number % 10) {
+                        case 1:
+                            return number + 'st';
+                        case 2:
+                            return number + 'nd';
+                        case 3:
+                            return number + 'rd';
+                        default:
+                            return number + 'th';
+                    }
+                },
+                getNumExecutors(){
+                    return this.formData.sec6.executorDetails.length
+                },
+                getExecutorNames(){
+                    let names = ''
+                    if(this.formData.sec6.executorDetails.length === 1) return this.formData.sec6.executorDetails[0].name
+                    for(let i=0;i<this.formData.sec6.executorDetails.length;i++){
+                        if(i!==this.formData.sec6.executorDetails.length-1)
+                        names += this.formData.sec6.executorDetails[i].name+', '
+                        else if(i===this.formData.sec6.executorDetails.length-1)
+                        names += 'and ' + this.formData.sec6.executorDetails[i].name
+                        else
+                        names += this.formData.sec6.executorDetails[i].name
+                    }
+                    return names
+                },
                 validateError: {},
-
+                
                 validate(inputName) {
                     let rules;
                     if (this.checkSubSec.includes(this.activeForm)) {
@@ -1122,10 +1279,8 @@ if (is_user_logged_in()) {
                 },
 
                 validateOnSubmit() {
-
                     if (this.checkSubSec.includes(this.activeForm)) {
-
-                        for (const inputName in this.validateRules[this.activeForm][this.activeSubForm]) {
+                        for (const inputName in this.validateRules[this.activeForm][this.activeSubForm]) {                        
                             this.validate(inputName);
                         }
                     } else {
@@ -1133,14 +1288,11 @@ if (is_user_logged_in()) {
                             this.validate(inputName);
                         }
                     }
-
-
                     for (const inputName in this.validateError) {
                         if (this.validateError[inputName]) {
                             return false;
                         }
                     }
-
                     return true;
                 },
 
@@ -1165,9 +1317,10 @@ if (is_user_logged_in()) {
                 },
 
                 selectChanged(e) {
-                    if (this.validateOnSubmit()) {
+                    if (this.validateOnSubmit()) {                        
                         let page = e.target.value;
                         this.activeForm = page
+                        if(this.checkSubSec.includes(page)) this.activeSubForm = 'intro'
                         this.updateState()
                     }else{
                         this.selectedOpt = this.activeForm
@@ -1200,7 +1353,7 @@ if (is_user_logged_in()) {
                     }
                     this.updateState()
                 },
-                validPrevSubPage(activeSubIndex){                    
+                validPrevSubPage(activeSubIndex){
                     if(activeSubIndex>0){                                    
                         let prevSubForm = this.allSubPages[this.activeForm][activeSubIndex-1]                                               
                         if(this.selectedFields[this.activeForm][prevSubForm] || this.selectedFields[this.activeForm][prevSubForm]==undefined){
@@ -1215,7 +1368,6 @@ if (is_user_logged_in()) {
                     }
                 },
                 nextPage() {
-
                     if (this.validateOnSubmit()) {
                         let page = this.allPages.indexOf(this.activeForm);
                         if (page >= 0 && page < this.allPages.length - 1) {
@@ -1230,6 +1382,12 @@ if (is_user_logged_in()) {
                         children: false,
                         grandChildren: false,
                         deceased: true
+                    },
+                    sec6: {
+                        alterExecutor: true,
+                    },
+                    sec7: {
+                        charities: true
                     }
                 },
 
@@ -1237,7 +1395,7 @@ if (is_user_logged_in()) {
                     if (this.checkSubSec.includes(this.activeForm)) {
                         if (this.activeForm === "sec3") {
                             if (this.activeSubForm === 'intro') {
-                                this.selectedFields[this.activeForm].partner = this.partnerFormOpen.includes(+(this.formData[this.activeForm].status));
+                                this.selectedFields[this.activeForm].partner = [2, 3, 4, 5, 7].includes(+(this.formData[this.activeForm].status));
                                 this.selectedFields[this.activeForm].children = this.formData[this.activeForm].children === '1';
                                 this.selectedFields[this.activeForm].grandChildren = this.formData[this.activeForm].grandChildren === '1';                                
                             }                             
@@ -1260,7 +1418,7 @@ if (is_user_logged_in()) {
                 },
                 validNextSubPage(activeSubIndex){
                     if(activeSubIndex < this.allSubPages[this.activeForm].length-1){ 
-                        let activeSubForm = this.allSubPages[this.activeForm][activeSubIndex]                       
+                        let activeSubForm = this.allSubPages[this.activeForm][activeSubIndex]
                         let nextSubForm = this.allSubPages[this.activeForm][activeSubIndex+1]                        
                         if(this.selectedFields[this.activeForm][nextSubForm]){
                             return nextSubForm
@@ -1282,30 +1440,81 @@ if (is_user_logged_in()) {
                     this.updateState()
                 },
 
-
-                save() {
+                async save() {
                     if (this.validateOnSubmit()) {
+                        data = JSON.parse(JSON.stringify(this.formData))
+                        jQuery.post('<?= admin_url('admin-ajax.php') ?>',{
+                            action:'update_form_data',
+                            data:data
+                        },
+                        function(response){
+                            console.log(response)
+                        })
                         alert('Save Successfully!');
                     }
                 },
+                isMainForm(){                    
+                    return this.allPages.includes(this.activeForm)
+                },
                 updateState(){
-                    try {
-                        if (this.mainForm) {
-                            this.progressValue = this.activeForm.split("sec")[1]                            
+                    // Update Progress Bar
+                    setTimeout(()=>{
+                        try {
+                            if (this.isMainForm()) {
+                                this.progressValue = this.activeForm.split("sec")[1]                                               
+                            }
                         }
-                    }
-                    catch (err) {
-                        console.log('Progress bar cannot be updated');
-                    }
-                    this.selectedOpt = this.activeForm                    
-                    if(this.activeForm!=='home' && this.activeForm!=='home') {
+                        catch (err) {
+                            console.log('Progress bar cannot be updated');
+                        }                        
+                    },0)                    
+                    this.selectedOpt = this.activeForm // Update Select Section
+                    // Check if it is a main form
+                    if(this.isMainForm()) {
                         this.mainForm = true
                     }else{
                         this.mainForm = false
                     }
+
+                    // Check if WIll holder is having any living minor child/grandchild for section 5
+                    if(this.activeForm=='sec5'){                        
+                        if(this.hasMinorChild()) {
+                            console.log(this.minorChildren)
+                        }
+                        if(this.formData.sec5.guardianDetails.length < this.minorChildren.length) this.extendGuardianFields(this.formData.sec5.guardianDetails.length)
+                    }
                 },
-                // section 3 logic
-                partnerFormOpen: [2, 3, 4, 5, 7],
+                extendGuardianFields(lengthDetails){
+                    if(lengthDetails<this.minorChildren.length){
+                        let dif = this.minorChildren.length - lengthDetails
+                        for(let i=0;i<dif;i++)
+                        this.formData.sec5.guardianDetails.push({'childName':'','name':'','reason':'','alterName':''})                    
+                    }
+                },
+                hasMinorChild(){
+                    let children = this.formData.sec3.children
+                    if(children==1){
+                        let allChild = this.formData.sec3.childDetails
+                        let dobs =allChild.map((detail)=>detail.dob)
+                        let minorChildNames = []                        
+                        for(let i=0;i<dobs.length;i++){                            
+                            dob = new Date(dobs[i])
+                            var month_diff = Date.now() - dob.getTime();
+                            var age_dt = new Date(month_diff);
+                            var year = age_dt.getUTCFullYear(); 
+                            var age = Math.abs(year - 1970);
+                            if(age<18) {        
+                                minorChildNames.push(this.formData.sec3.childDetails[i].name)                                                        
+                            }
+                        }
+                        if(minorChildNames.length>0) {
+                            this.minorChildren = minorChildNames
+                            return true
+                        }
+                    }
+                    else return false
+                },
+                minorChildren: [],
                 partner: {},
                 children: [],
                 grandChildren: [],

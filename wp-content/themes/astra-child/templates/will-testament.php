@@ -59,7 +59,7 @@ function validateWillsForm($willsFormData = []){
         'sec4' => [
             'otherBeneficiaries' => 1,
             'numBeneficiaries' => 1,
-            'beneficiaryDetails' => [['gender' => '', 'name' => '', 'relation' => '', 'address' => '']],
+            'beneficiaryDetails' => [['gender' => '', 'name' => '', 'relation' => '', 'address' => '','eqShare' => '']],
         ],
         'sec5' => [
             'guardianDetails' => [['childName'=>'','name'=>'','reason'=>'','alterName'=>'']]
@@ -75,6 +75,17 @@ function validateWillsForm($willsFormData = []){
             'charitableDonation' => 1,
             'numBequests' => 1,
             'bequestDetails' => [['type'=>1,'amount'=>'','percentage'=>'','asset'=>'','charityName'=>'']],
+            'petTrust' => 1,
+            'numPets' => 1,
+            'petDetails' => [['name'=>'','type'=>'','amount'=>'','caretaker'=>'','alterCaretaker'=>'']],
+            'possessionDist' => 1,
+            'shareExp' => 1,
+            'equalShare' => [['benefID'=>0,'share'=>'']],
+            'numSpecifics' => 0,
+            'specificsDetails' => [['type'=>1,'gift'=>'','description'=>'','giftBenefIndex'=>-1,'alterGiftBenefIndex'=>-1]],
+            'everythingBenefIndex' => -1,
+            'multiBenefProvisions' => [['radio'=>1,'alterBenefIndex'=>-1,'shareDesc'=>'']],
+
         ],
         'sec8' => null,
         'sec9' => null,
@@ -124,7 +135,7 @@ if (is_user_logged_in()) {
     </style>
     <!-- Code here -->
     <script>
-        const willsFormData = <?php echo json_encode($will_data); ?>;        
+        const willsFormData = <?php echo json_encode($will_data); ?>;  
     </script>
     <div x-data="data" x-init="updateState();" class="w-full">
         <div x-cloak>
@@ -189,31 +200,31 @@ if (is_user_logged_in()) {
                             <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max" @click="openPage('sec1')">
                                 Section 1: Introduction <span class="text-red-600">START HERE</span>
                             </li>
-                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max">
+                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max" @click="openPage('sec2')">
                                 Section 2: Personal Details
                             </li>
-                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max">
+                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max" @click="openPage('sec3')">
                                 Section 3: Family Status
                             </li>
-                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max">
+                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max" @click="openPage('sec4')">
                                 Section 4: Other Beneficiaries
                             </li>
-                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max">
+                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max" @click="openPage('sec5')">
                                 Section 5: Guardians for Minor Children
                             </li>
-                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max">
+                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max" @click="openPage('sec6')">
                                 Section 6: Executor
                             </li>
-                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max">
+                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max" @click="openPage('sec7')">
                                 Section 7: Distribute Your Possessions
                             </li>
-                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max">
+                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max" @click="openPage('sec8')">
                                 Section 8: Trusts for Young Beneficiaries
                             </li>
-                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max">
+                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max" @click="openPage('sec9')">
                                 Section 9: Forgive Debts
                             </li>
-                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max">
+                            <li class="text-blue-400 hover:text-blue-500 cursor-pointer w-max" @click="openPage('sec10')">
                                 Section 10: Next Steps
                             </li>
                         </ul>
@@ -673,23 +684,23 @@ if (is_user_logged_in()) {
                                                         <p class="form-label mt-2"><span class="text-red-500">*</span> Gender/Type:</p>
                                                         <div class="flex flex-col">
                                                             <div>
-                                                                <input type="radio" :name="'relationBeneficiary'+childIndex" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="1" class="mr-4"><label for="">Male</label>
+                                                                <input type="radio" :name="'genderBeneficiary'+childIndex" id="genderBeneficiary1" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="1" class="mr-4"><label for="genderBeneficiary1">Male</label>
                                                             </div>
                                                             <div>
-                                                                <input type="radio" :name="'relationBeneficiary'+childIndex" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="2" class="mr-4"><label for="">Female</label>
+                                                                <input type="radio" :name="'genderBeneficiary'+childIndex" id="genderBeneficiary2" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="2" class="mr-4"><label for="genderBeneficiary2">Female</label>
                                                             </div>
                                                             <div>
-                                                                <input type="radio" :name="'relationBeneficiary'+childIndex" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="3" class="mr-4"><label for="">Neutral</label>
+                                                                <input type="radio" :name="'genderBeneficiary'+childIndex" id="genderBeneficiary3" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="3" class="mr-4"><label for="genderBeneficiary3">Neutral</label>
                                                             </div>
                                                             <div>
-                                                                <input type="radio" :name="'relationBeneficiary'+childIndex" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="4" class="mr-4"><label for="">Charity/Org</label>
+                                                                <input type="radio" :name="'genderBeneficiary'+childIndex" id="genderBeneficiary4" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="4" class="mr-4"><label for="genderBeneficiary4">Charity/Org</label>
                                                             </div>
                                                             <div>
-                                                                <input type="radio" :name="'relationBeneficiary'+childIndex" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="5" class="mr-4"><label for="">Group</label>
-                                                            </div>                                                            
+                                                                <input type="radio" :name="'genderBeneficiary'+childIndex" id="genderBeneficiary5" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="5" class="mr-4"><label for="genderBeneficiary5">Group</label>
+                                                            </div>
                                                         </div>
                                                     </div> 
-                                                    <div>
+                                                    <div class="mb-2">
                                                         <div class="mt-2">
                                                             <label for=""><span class="text-red-500">*</span> Full Name</label>
                                                             <input x-model="formData.sec4.beneficiaryDetails[childIndex].name" type="text">
@@ -947,12 +958,361 @@ if (is_user_logged_in()) {
                                                                     <option value="2">Percentage of my estate</option>
                                                                     <option value="3">Specific asset (e.g. my car)</option>                                                            
                                                                 </select>
+                                                                <div x-show="formData.sec7.bequestDetails[childIndex].type==1">
+                                                                    <label for=""><span class="text-red-500">*</span> Enter the amount</label>
+                                                                    <input x-model="formData.sec7.bequestDetails[childIndex].amount" type="text">
+                                                                </div>
+                                                                <div x-show="formData.sec7.bequestDetails[childIndex].type==2">
+                                                                    <label for=""><span class="text-red-500">*</span> Enter the percentage</label>
+                                                                    <input x-model="formData.sec7.bequestDetails[childIndex].percentage" type="text">
+                                                                </div>
+                                                                <div x-show="formData.sec7.bequestDetails[childIndex].type==3">
+                                                                    <label for=""><span class="text-red-500">*</span> Description</label>
+                                                                    <textarea x-model="formData.sec7.bequestDetails[childIndex].asset" class="h-1/5 p-2"></textarea>                                                                    
+                                                                </div>
+                                                                <div>
+                                                                    <label for=""><span class="text-red-500">*</span> To the charity</label>
+                                                                    <input x-model="formData.sec7.bequestDetails[childIndex].charityName" type="text">
+                                                                </div>
+                                                                <button x-show="childIndex>0" @click="removeBequest(childIndex)" class="mt-2 bg-red-500 px-6 py-2 text-white hover:bg-red-600">
+                                                                    DELETE
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </template>
+                                                    <div x-show="formData.sec7.numBequests < 5">
+                                                        <button @click="addBequest($event)" class="mt-2 bg-green-500 px-6 py-2 text-white hover:bg-green-600">Add</button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                    <!-- Sub section Trusts for Pets of section 7 -->
+                                    <div x-show="activeSubForm === 'petTrusts'">
+                                        <div>
+                                            <h1 class="text-4xl text-blue-500">Trusts for Pets</h1>                                            
+                                        </div>
+                                        <div class="mt-4">
+                                            <p class="mb-2">
+                                            If you have pets, you may wish to create a Trust to be used for their care after you have passed away.
+                                            </p>                                                                                    
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <div>
+                                                <input type="radio" name="petTrust" x-model="formData.sec7.petTrust" id="petTrust1" value="1" class="mr-4"><label for="petTrust1">I do not want to create a Trust for the care of a pet.</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" name="petTrust" x-model="formData.sec7.petTrust" id="petTrust2" value="2" class="mr-4"><label for="petTrust2">I would like to create a Trust for the care of a pet.</label>
+                                            </div>                                            
+                                        </div>
+                                        <div x-show="formData.sec7.petTrust==2">
+                                            <div>
+                                                <template x-for="(item,childIndex) in formData.sec7.petDetails">
+                                                    <div class="mt-10 flex">
+                                                        <div class="w-2/12 p-4 border-2">
+                                                            <p x-text="childIndex+1"></p>
+                                                        </div>
+                                                        <div class="w-10/12 p-4 border-2 border-l-0">
+                                                            <p><span class="text-red-500">*</span> = required information</p>                                                            
+                                                            <div class="mb-2">
+                                                                <label for=""><span class="text-red-500">*</span> Name of Pet</label>
+                                                                <input x-model="formData.sec7.petDetails[childIndex].name" type="text">
+                                                                <p class="text-xs">Enter the name that is used to uniquely identify the pet, so that there is no confusion over which pet you are referring to.</p>
+                                                            </div>
+                                                            <div class="mb-2">
+                                                                <label for=""><span class="text-red-500">*</span> Type of Pet</label>
+                                                                <input x-model="formData.sec7.petDetails[childIndex].type" type="text">
+                                                                <p class="text-xs">Be as specific as you can. For example, "Chocolate Labrador Retriever".</p>
+                                                            </div>
+                                                            <div class="mb-2">
+                                                                <label for=""><span class="text-red-500">*</span> Amount in the Trust</label>
+                                                                <input x-model="formData.sec7.petDetails[childIndex].amount" type="text">
+                                                                <p class="text-xs">Enter the exact amount of money, including the currency. For example, "$1,000 United States dollars".</p>
+                                                            </div>
+                                                            <div class="mb-2">
+                                                                <label for=""><span class="text-red-500">*</span> Caretaker</label>
+                                                                <input x-model="formData.sec7.petDetails[childIndex].caretaker" type="text">
+                                                                <p class="text-xs">Uniquely identify the person that you wish to care for this pet.</p>
+                                                            </div>
+                                                            <div class="mb-2">
+                                                                <label for=""><span class="text-red-500">*</span> Alternate Caretaker</label>
+                                                                <input x-model="formData.sec7.petDetails[childIndex].alterCaretaker" type="text">
+                                                                <p class="text-xs">This person would take on the role if your first choice was unable or unwilling to serve.</p>
+                                                            </div>
+                                                            <button x-show="childIndex>0" @click="removePet(childIndex)" class="mt-2 bg-red-500 px-6 py-2 text-white hover:bg-red-600">
+                                                                DELETE
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                                <div x-show="formData.sec7.numPets < 5">
+                                                    <button @click="addPet($event)" class="mt-2 bg-green-500 px-6 py-2 text-white hover:bg-green-600">Add</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Sub section Distribute My Possessions of section 7 -->
+                                    <div x-show="activeSubForm === 'possessionsDist'">
+                                        <div>
+                                            <h1 class="text-4xl text-blue-500">Distribute My Possessions</h1>                                            
+                                        </div>
+                                        <div class="mt-2 flex flex-col">
+                                            <div>
+                                                <input type="radio" name="possessionDist" x-model="formData.sec7.possessionDist" id="possessionDist1" value="1" class="mr-4"><label for="possessionDist1">Leave everything I own to multiple beneficiaries.</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" name="possessionDist" x-model="formData.sec7.possessionDist" id="possessionDist2" value="2" class="mr-4"><label for="possessionDist2">I would like to leave specific items to specific beneficiaries, and leave the rest to multiple beneficiaries.</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" name="possessionDist" x-model="formData.sec7.possessionDist" id="possessionDist3" value="3" class="mr-4"><label for="possessionDist3">Leave everything I own to the following beneficiary:</label>
+                                            </div>
+                                            <div class="mt-2 w-6/12">                                                
+                                                <label for=""><span class="text-red-500">*</span> Beneficiary:</label>
+                                                <select x-model="formData.sec7.everythingBenefIndex" >
+                                                    <template x-for="(benf, benefIndex) in beneficiaryNames">
+                                                        <option :value="benf.value" :selected="benf.value == formData.sec7.everythingBenefIndex" x-text="benf.name"></option>
+                                                    </template>
+                                                </select>
+                                            </div>                                                                                       
+                                            <div>
+                                                <input type="radio" name="possessionDist" x-model="formData.sec7.possessionDist" id="possessionDist4" value="4" class="mr-4"><label for="possessionDist4">I would like to leave specific items to specific beneficiaries, and leave the rest to the following beneficiary:</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" name="possessionDist" x-model="formData.sec7.possessionDist" id="possessionDist5" value="5" class="mr-4"><label for="possessionDist5">I would like to leave specific items to specific beneficiaries, and let me describe how to leave the rest.</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" name="possessionDist" x-model="formData.sec7.possessionDist" id="possessionDist6" value="6" class="mr-4"><label for="possessionDist6">None of the above.  Let me describe in detail how I would like to distribute my possessions.</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" name="possessionDist" x-model="formData.sec7.possessionDist" id="possessionDist7" value="7" class="mr-4"><label for="possessionDist7">Undecided</label>
+                                            </div>                                            
+                                        </div>
+                                    </div>
+                                    <!-- Sub section Divide Possessions Between Multiple Beneficiaries of section 7 -->
+                                    <div x-show="activeSubForm === 'divideEqual'">
+                                        <div>
+                                            <h1 class="text-4xl text-blue-500">Divide Possessions Between Multiple Beneficiaries</h1>                                            
+                                        </div>
+                                        <div class="mt-4">
+                                            <p x-show="formData.sec7.possessionDist==1" class="mb-2">
+                                                I would like my possessions to be divided between my multiple beneficiaries in the following way:
+                                            </p>
+                                            <p x-show="formData.sec7.possessionDist==2" class="mb-2">
+                                                I would like the rest of my possessions to be divided between my multiple beneficiaries in the following way:
+                                            </p>
+                                            <p><span class="text-red-500">*</span> = required information</p>
+                                            <div class="mt-2 flex flex-col">
+                                                <div>
+                                                    <input type="radio" name="shareExp" x-model="formData.sec7.shareExp" id="shareExp1" value="1" class="mr-4"><label for="shareExp1">Express shares below as fractions (total must equal 1)</label>
+                                                </div>
+                                                <div>
+                                                    <input type="radio" name="shareExp" x-model="formData.sec7.shareExp" id="shareExp2" value="2" class="mr-4"><label for="shareExp2">Express shares below as percentages (total must equal 100)</label>
+                                                </div>                                                                                     
+                                            </div>
+
+                                            <div class="mt-6">
+                                                <template x-for="(item,childIndex) in formData.sec4.beneficiaryDetails">
+                                                    <div class="mt-10 flex">
+                                                        <div class="w-2/12 p-4 border-2">
+                                                            <p x-text="childIndex+1"></p>
+                                                        </div>
+                                                        <div class="w-6/12 p-4 border-2 border-l-0">
+                                                            <p><span class="text-red-500">*</span> = required information</p>
+                                                            <div>
+                                                                <label for=""><span class="text-red-500">*</span> Full Name</label>
+                                                                <input x-model="formData.sec4.beneficiaryDetails[childIndex].name" type="text">
+                                                            </div>
+                                                            <div>
+                                                                <p class="form-label mt-2"><span class="text-red-500">*</span> Gender/Type:</p>
+                                                                <div class="flex flex-col">
+                                                                    <div>
+                                                                        <input type="radio" :name="'genderBeneficiary2'+childIndex" id="genderBeneficiary11" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="1" class="mr-4"><label for="genderBeneficiary11">Male</label>
+                                                                    </div>
+                                                                    <div>
+                                                                        <input type="radio" :name="'genderBeneficiary2'+childIndex" id="genderBeneficiary22" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="2" class="mr-4"><label for="genderBeneficiary22">Female</label>
+                                                                    </div>
+                                                                    <div>
+                                                                        <input type="radio" :name="'genderBeneficiary2'+childIndex" id="genderBeneficiary33" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="3" class="mr-4"><label for="genderBeneficiary33">Neutral</label>
+                                                                    </div>
+                                                                    <div>
+                                                                        <input type="radio" :name="'genderBeneficiary2'+childIndex" id="genderBeneficiary44" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="4" class="mr-4"><label for="genderBeneficiary44">Charity/Org</label>
+                                                                    </div>
+                                                                    <div>
+                                                                        <input type="radio" :name="'genderBeneficiary2'+childIndex" id="genderBeneficiary55" x-model="formData.sec4.beneficiaryDetails[childIndex].gender" value="5" class="mr-4"><label for="genderBeneficiary55">Group</label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-2">
+                                                                <div class="mt-2">
+                                                                    <label for=""><span class="text-red-500">*</span> Full Name</label>
+                                                                    <input x-model="formData.sec4.beneficiaryDetails[childIndex].name" type="text">
+                                                                </div>
+                                                                <div class="mt-2">
+                                                                    <label for=""><span class="text-red-500">*</span> Relationship</label>
+                                                                    <input x-model="formData.sec4.beneficiaryDetails[childIndex].relation" type="text">
+                                                                </div>
+                                                                <div class="mt-2">
+                                                                    <label for=""><span class="text-red-500">*</span> Address</label>
+                                                                    <input x-model="formData.sec4.beneficiaryDetails[childIndex].address" type="text">
+                                                                </div>
+                                                            </div>
+                                                            <button x-show="childIndex >= 1" @click="removeBeneficiary(childIndex)" class="bg-red-500 px-6 py-2 text-white hover:bg-red-600">Remove</button>
+                                                        </div>
+                                                        <div class="w-4/12 p-4 border-2 border-l-0">
+                                                            <div x-show="formData.sec7.shareExp==1">
+                                                                <div>
+                                                                    Beneficiary's Share, expressed as a fraction (e.g. "1/3")
+                                                                </div>
+                                                                <div>
+                                                                    <div class="mt-4">
+                                                                        <label for=""><span class="text-red-500">*</span> Share</label>
+                                                                        <input x-model="formData.sec4.beneficiaryDetails[childIndex].eqShare" type="text">                                                                        
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div x-show="formData.sec7.shareExp==2">
+                                                                <div>
+                                                                    Beneficiary's Share, expressed as a percentage (e.g. "20.5")
+                                                                </div>
+                                                                <div>
+                                                                    <div class="mt-4">
+                                                                        <label for=""><span class="text-red-500">*</span> Share</label>
+                                                                        <input x-model="formData.sec4.beneficiaryDetails[childIndex].eqShare" type="text">
+                                                                        <p class="text-xs">Percent</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                                <div class="mt-2">
+                                                    <button x-show="formData.sec4.numBeneficiaries < 5" @click="addBeneficiary($event)" class="bg-green-500 px-6 py-2 text-white hover:bg-green-600">Add Beneficiary</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <!-- Sub section Make Bequests of section 7 -->
+                                    <div x-show="activeSubForm === 'makeBequests'">
+                                        <div>
+                                            <h1 class="text-4xl text-blue-500">Make Bequests</h1>                                            
+                                        </div>
+                                        <div class="mt-4">
+                                            <p class="mb-2">
+                                            I would like to leave the following specific items to specific beneficiaries. Any of my possessions not specifically described here will go to my multiple main beneficiaries.
+                                            </p>
+                                        </div>
+                                        <div class="p-4 border-2">
+                                            <template x-for="(item,childIndex) in formData.sec7.specificsDetails">
+                                                <div class="mt-10 flex">
+                                                    <div class="w-2/12 p-4 border-2">
+                                                        <p x-text="childIndex+1"></p>
+                                                    </div>
+                                                    <div class="w-10/12 p-4 border-2 border-l-0">
+                                                        <p class="text-2xl mb-2">Add Bequest</p>
+                                                        <p class="mb-2"><span class="text-red-500">*</span> = required information</p>
+                                                        <p class="my-2">STEP 1 - Choose whether this bequest is a:</p>                                                        
+                                                        <div>                                                            
+                                                            <div class="flex flex-col">
+                                                                <div>
+                                                                    <input type="radio" :name="'specType2'+childIndex" id="specType11" x-model="formData.sec7.specificsDetails[childIndex].type" value="1" class="mr-4"><label for="specType11">Simple gift (one item to one person)</label>
+                                                                </div>
+                                                                <div>
+                                                                    <input type="radio" :name="'specType2'+childIndex" id="specType22" x-model="formData.sec7.specificsDetails[childIndex].type" value="2" class="mr-4"><label for="specType22">Detailed description</label>
+                                                                </div>                                                                
+                                                            </div>
+                                                            <div>
+                                                                <p class="my-2">STEP 2 - Describe the bequest:</p>
+                                                                <div x-show="formData.sec7.specificsDetails[childIndex].type==1">
+                                                                    <div class="mt-2">
+                                                                        <label for=""><span class="text-red-500">*</span> I would like to give:</label>
+                                                                        <input x-model="formData.sec7.specificsDetails[childIndex].gift" type="text">                                                                    
+                                                                    </div>
+                                                                    <div class="mt-2">
+                                                                        <label for=""><span class="text-red-500">*</span> To the beneficiary:</label>
+                                                                        <select x-model="formData.sec7.specificsDetails[childIndex].giftBenefIndex" >
+                                                                            <template x-for="(benf, benefIndex) in beneficiaryNames">
+                                                                                <option :value="benf.value" :disabled="benf.value==-1" :selected="benf.value == formData.sec7.specificsDetails[childIndex].giftBenefIndex" x-text="benf.name"></option>
+                                                                            </template>
+                                                                        </select>
+                                                                    </div>
+                                                                    <div class="mt-2">
+                                                                        <label for="">Alternate  beneficiary:</label>
+                                                                        <select x-model="formData.sec7.specificsDetails[childIndex].alterGiftBenefIndex">
+                                                                            <template x-for="(benf, benefIndex) in beneficiaryNames">
+                                                                                <option :value="benf.value" :selected="benf.value == formData.sec7.specificsDetails[childIndex].alterGiftBenefIndex" x-text="benf.name"></option>
+                                                                            </template>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div x-show="formData.sec7.specificsDetails[childIndex].type==2">
+                                                                    <p class="italic text-red-600 font-semibold">Provide a very specific and detailed description. Also, you must include the full names and addresses of all beneficiaries you include in your description.</p>
+                                                                    <div class="mt-2">
+                                                                        <label for=""><span class="text-red-500">*</span> Description:</label>
+                                                                        <textarea class="h-1/5 p-2" x-model="formData.sec7.specificsDetails[childIndex].description"></textarea>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>                                                        
+                                                        <button @click="removeSpecific(childIndex)" class="bg-red-500 mt-2 px-6 py-2 text-white hover:bg-red-600">Delete</button>
+                                                    </div>                                                    
+                                                </div>
+                                            </template>
+                                            <div x-show="formData.sec7.numSpecifics < 10">
+                                                <button @click="addSpecific($event)" class="mt-2 bg-green-500 px-6 py-2 text-white hover:bg-green-600">Add</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Sub section Make Provisions For Multiple Beneficiaries of section 7 -->
+                                    <div x-show="activeSubForm === 'multiBenefProvisions'">
+                                        <div>
+                                            <h1 class="text-4xl text-blue-500">Make Provisions For Multiple Beneficiaries</h1>                                            
+                                        </div>
+                                        <template x-for="(item,childIndex) in formData.sec4.beneficiaryDetails">
+                                            <div class="border-2 mt-4 p-4">
+                                                <div>
+                                                    <p>If my <span x-text="item.relation"></span>, <span x-text="item.name"></span>, does not survive me by thirty (30) days, then:</p>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <div class="flex flex-col">
+                                                        <!-- 'multiBenefProvisions' => [['radio'=1,'alterBenefIndex'=>-1,'shareDesc'=>'']] -->
+                                                        <div>
+                                                            <input type="radio" :name="'multiBen2'+childIndex" :id="'multiBen11'+childIndex" x-model="formData.sec7.multiBenefProvisions[childIndex].radio" value="1" class="mr-4"><label :for="'multiBen11'+childIndex">Divide his share equally between his own surviving children</label>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" :name="'multiBen2'+childIndex" :id="'multiBen22'+childIndex" x-model="formData.sec7.multiBenefProvisions[childIndex].radio" value="2" class="mr-4"><label :for="'multiBen22'+childIndex">Divide his share equally between my other surviving beneficiaries</label>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" :name="'multiBen2'+childIndex" :id="'multiBen33'+childIndex" x-model="formData.sec7.multiBenefProvisions[childIndex].radio" value="3" class="mr-4"><label :for="'multiBen33'+childIndex">Leave his share to the following alternate  beneficiary:</label>
+                                                        </div>
+                                                        <div class="mt-2 w-6/12">                                                
+                                                            <label for=""><span class="text-red-500">*</span> Beneficiary:</label>
+                                                            <select x-model="formData.sec7.multiBenefProvisions[childIndex].alterBenefIndex" >
+                                                                <template x-for="(benf, benefIndex) in getAlterBenefs(childIndex)">
+                                                                    <option :value="benf.value" :selected="benf.value == formData.sec7.multiBenefProvisions[childIndex].alterBenefIndex" x-text="benf.name"></option>
+                                                                </template>
+                                                            </select>
+                                                        </div>
+                                                        <div>
+                                                            <input type="radio" :name="'multiBen2'+childIndex" :id="'multiBen44'+childIndex" x-model="formData.sec7.multiBenefProvisions[childIndex].radio" value="4" class="mr-4"><label :for="'multiBen44'+childIndex">Distribute his share in the following way:</label>
+                                                        </div>
+                                                        <div><p class="italic text-red-600 font-semibold">Provide a very specific and detailed description. Also, you must include the full names and addresses of all beneficiaries you include in your description.</p></div>
+                                                        
+                                                    </div>                                                    
+                                                </div>
+                                            </div>
+                                        </template>                                        
+
+                                    </div>
+                                    <!-- Sub section Name Alternate Beneficiary of section 7 -->
+                                    <div x-show="activeSubForm === 'alterBenef'">
+                                        <div>
+                                            <h1 class="text-4xl text-blue-500">Name Alternate Beneficiary</h1>                                            
+                                        </div>
+                                        <div class="mt-4">
+                                            <p class="mb-2">If my main beneficiary (name1) does not survive me by thirty (30) days, then:</p>
+                                        </div>
+
                                     </div>
                                 </div>
                                 <div x-show="activeForm === 'sec8'"></div>
@@ -972,7 +1332,7 @@ if (is_user_logged_in()) {
 
         </div>
     </div>    
-    <script>
+    <script>        
         document.addEventListener('alpine:init', () => {
             Alpine.data('data', () => ({
                 child: 0,
@@ -995,11 +1355,11 @@ if (is_user_logged_in()) {
                 allSubPages: {
                     'sec3': ['intro', 'partner', 'children', 'grandChildren', 'deceased'],
                     'sec6': ['intro','alterExecutor'],
-                    'sec7': ['intro','charities'],
+                    'sec7': ['intro','charities','petTrusts','possessionsDist','makeBequests','multiBenefProvisions','divideEqual','alterBenef'],
                 },
                 mainForm:false,
                 selectedOpt: 1,
-
+                beneficiaryNames: [],
                 formData : willsFormData,
 
                 qna: {
@@ -1165,6 +1525,24 @@ if (is_user_logged_in()) {
                         charities: {
 
                         },
+                        petTrusts: {
+
+                        },
+                        possessionsDist:{
+
+                        },
+                        divideEqual:{
+
+                        },
+                        makeBequests:{
+
+                        },
+                        multiBenefProvisions: {
+
+                        },
+                        alterBenef:{
+
+                        },
                     }
                 },
                 addChild(e){
@@ -1215,6 +1593,30 @@ if (is_user_logged_in()) {
                     this.formData.sec6.alterExecutorDetails.splice(index, 1);
                     this.formData.sec6.numAlterExecutor--
                 },
+                addBequest(e){
+                    this.formData.sec7.numBequests++
+                    this.formData.sec7.bequestDetails.push({"type":1,"amount":"","percentage":"","asset":"","charityName":""})
+                },
+                removeBequest(index) {
+                    this.formData.sec7.bequestDetails.splice(index, 1);
+                    this.formData.sec7.numBequests--
+                },                
+                addPet(e){
+                    this.formData.sec7.numPets++
+                    this.formData.sec7.petDetails.push({"name":"","type":"","amount":"","caretaker":"","alterCaretaker":""})
+                },
+                removePet(index) {
+                    this.formData.sec7.petDetails.splice(index, 1);
+                    this.formData.sec7.numPets--
+                },
+                addSpecific(e){
+                    this.formData.sec7.numSpecifics++
+                    this.formData.sec7.specificsDetails.push({"type":1,"gift":"","description":"","giftBenefIndex":0,"alterGiftBenefIndex":0})
+                },
+                removeSpecific(index) {
+                    this.formData.sec7.specificsDetails.splice(index, 1);
+                    this.formData.sec7.numSpecifics--
+                },                
                 getNumFormat(number){
                     switch (number % 10) {
                         case 1:
@@ -1242,6 +1644,15 @@ if (is_user_logged_in()) {
                         names += this.formData.sec6.executorDetails[i].name
                     }
                     return names
+                },
+                getAlterBenefs(discardIndex){
+                    let benefs = this.formData.sec4.beneficiaryDetails
+                    let alterBenefs = []
+                    benefs.forEach((item,index)=>{
+                        if(index!==discardIndex) alterBenefs.push({'value':index,'name':item.name})
+                    })
+                    alterBenefs.unshift({'value':-1,'name':'[make selection]'})
+                    return alterBenefs
                 },
                 validateError: {},
                 
@@ -1305,14 +1716,15 @@ if (is_user_logged_in()) {
                     switch (pageName) {
                         case 'createMod':
                             this.activeForm = 'createMod';
-                            break;
-                        case 'sec1':
-                            this.activeForm = 'sec1';
-                            this.mainForm = true;
-                            break;
+                            break;                        
                         default:
                             this.activeForm = 'home';
                             break;
+                    }
+                    if(pageName.includes('sec')){
+                        this.activeForm = pageName;
+                        this.mainForm = true;    
+                        this.updateState()                    
                     }
                 },
 
@@ -1387,8 +1799,15 @@ if (is_user_logged_in()) {
                         alterExecutor: true,
                     },
                     sec7: {
-                        charities: true
-                    }
+                        charities: true,
+                        petTrusts: true,
+                        possessionsDist: true,
+                        divideEqual: false,
+                        makeBequests: false,
+                        multiBenefProvisions: false,
+                        alterBenef: false,
+                    },
+
                 },
 
                 submit(page) {
@@ -1399,6 +1818,19 @@ if (is_user_logged_in()) {
                                 this.selectedFields[this.activeForm].children = this.formData[this.activeForm].children === '1';
                                 this.selectedFields[this.activeForm].grandChildren = this.formData[this.activeForm].grandChildren === '1';                                
                             }                             
+                        }
+                        if(this.checkSubSec.includes(this.activeForm)){
+                            if(this.activeForm === "sec7") {
+                                if(this.activeSubForm === 'possessionsDist') {
+                                    this.selectedFields[this.activeForm].divideEqual = [1,2].includes(+(this.formData[this.activeForm].possessionDist))
+                                    this.selectedFields[this.activeForm].makeBequests = [2].includes(+(this.formData[this.activeForm].possessionDist))
+                                    this.selectedFields[this.activeForm].multiBenefProvisions = [2].includes(+(this.formData[this.activeForm].possessionDist))                                    
+                                    this.selectedFields[this.activeForm].alterBenef = [1,2].includes(+(this.formData[this.activeForm].possessionDist))
+                                    if(this.selectedFields[this.activeForm].divideEqual){
+                                        this.formData.sec4.otherBeneficiaries = 2
+                                    }
+                                }
+                            }
                         }
                         let index = this.allSubPages[this.activeForm].indexOf(this.activeSubForm);
                         if(index<this.allSubPages[this.activeForm].length-1){
@@ -1482,6 +1914,15 @@ if (is_user_logged_in()) {
                             console.log(this.minorChildren)
                         }
                         if(this.formData.sec5.guardianDetails.length < this.minorChildren.length) this.extendGuardianFields(this.formData.sec5.guardianDetails.length)
+                    } else if(this.activeForm=='sec7' && this.activeSubForm=='possessionsDist'){
+                        this.beneficiaryNames = this.formData.sec4.beneficiaryDetails.map((item,index)=>{
+                            return {'name':item.name,'value':index}
+                        })
+                        this.beneficiaryNames.unshift({'name':'None','value':-1})
+                        
+                    }
+                    if(this.activeForm=='sec7' && this.activeSubForm=='multiBenefProvisions'){
+                        this.extendMultiBenefProvisions()
                     }
                 },
                 extendGuardianFields(lengthDetails){
@@ -1489,6 +1930,15 @@ if (is_user_logged_in()) {
                         let dif = this.minorChildren.length - lengthDetails
                         for(let i=0;i<dif;i++)
                         this.formData.sec5.guardianDetails.push({'childName':'','name':'','reason':'','alterName':''})                    
+                    }
+                },
+                extendMultiBenefProvisions(){
+                    let lengthBenef = this.formData.sec4.beneficiaryDetails.length
+                    let dif = lengthBenef - this.formData.sec7.multiBenefProvisions.length
+                    if(lengthBenef>dif){
+                        for(let i=0;i<dif;i++){
+                            this.formData.sec7.multiBenefProvisions.push({"radio":1,"alterBenefIndex":-1,"shareDesc":""})
+                        }
                     }
                 },
                 hasMinorChild(){

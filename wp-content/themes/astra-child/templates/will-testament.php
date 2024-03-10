@@ -95,9 +95,11 @@ function validateWillsForm($willsFormData = []){
             'describeAlterDesc' => '',
 
         ],
-        'sec8' => [['trust'=>1,'expiryAge'=>-1,'shareType'=>1,'fraction'=>'','ageGranted'=>-1,'fractionRemainder'=>'','atThisAge'=>-1]],
-        'sec9' => null,
-        'sec10' => null,        
+        'sec8' => [
+            'youngBenefs' => [['trust'=>1,'expiryAge'=>-1,'shareType'=>1,'fraction'=>'','ageGranted'=>-1,'fractionRemainder'=>'','atThisAge'=>-1]],
+        ],
+        'sec9' => ['forgive'=>'1','forgiveDetails'=>''],
+        'sec10' => ['attachement'=>''],        
     ];
     $validatedData = [];
     foreach ($defaultValues as $section => $data) {
@@ -119,11 +121,6 @@ if (is_user_logged_in()) {
     if(array_key_exists('wills_form_data',$userMeta) && is_array($userMeta['wills_form_data'])){
         $will_data = unserialize($userMeta['wills_form_data'][0]);
         $will_data = validateWillsForm($will_data);        
-        // echo '<pre>';
-        // print_r($will_data);
-        // echo '</pre>';
-        // echo $will_data['sec8'];
-        // exit;
     }else{
         $will_data = validateWillsForm($will_data);
     }
@@ -143,13 +140,14 @@ if (is_user_logged_in()) {
     </style>
     <!-- Code here -->
     <script>
-        const willsFormData = <?php echo json_encode($will_data); ?>;  
+        const willsFormData = <?php echo json_encode($will_data); ?>;
+        console.log(willsFormData);        
     </script>
     <div x-data="data" x-init="updateState();" class="w-full">
         <div x-cloak>
-            <div>
-                <a href="javascript:void(0)">
-                    <button class="bg-green-600 text-white rounded border text-2xl px-8 py-2 hover:bg-green-500">Back</button>
+            <div class="w-11/12 mx-auto p-8">
+                <a href="<?= site_url() ?>/online-estate-planning/">
+                    <button class="bg-green-600 text-white rounded border border-green-600 px-4 py-2 hover:bg-green-500">Back</button>
                 </a>
 
                 <div class="border-b-2 border-red-700 py-4">
@@ -158,9 +156,9 @@ if (is_user_logged_in()) {
 
             </div>
             <div x-show="activeForm === 'home'">
-                <div class="w-screen mx-auto p-10">
+                <div class="w-10/12 mx-auto p-10">
 
-                    <div class="w-10/12 mx-auto">
+                    <div class="mx-auto">
 
                         <div class="my-8">
                             <p>Here you can create a legal Last Will and Testament, custom-made for your local jurisdiction. You must print, sign and witness your Last Will and Testament to make it a legal document.</p>
@@ -192,7 +190,7 @@ if (is_user_logged_in()) {
                 </div>
             </div>
             <div x-show="activeForm === 'createMod'">
-                <div class="w-screen mx-auto p-10">
+                <div class="w-10/12 mx-auto p-10">
                     <p>
                         Below is a list of the sections in the MyWill™ question-and-answer wizard.</p>
                     <br>
@@ -481,13 +479,13 @@ if (is_user_logged_in()) {
                                             <p class="form-label mt-2">Gender pronoun:<span class="text-red-500">*</span></p>
                                             <div class="flex flex-col">
                                                 <div>
-                                                    <input type="radio" name="gender" value="1" x-model="formData.sec3.partnerGender" @change="validate('partnerGender')" class="mr-4"><label for="">Male (he/his)</label>
+                                                    <input type="radio" name="genderS" value="1" x-model="formData.sec3.partnerGender" @change="validate('partnerGender')" class="mr-4"><label for="">Male (he/his)</label>
                                                 </div>
                                                 <div>
-                                                    <input type="radio" name="gender" value="2" x-model="formData.sec3.partnerGender" @change="validate('partnerGender')" class="mr-4"><label for="">Female (she/her)</label>
+                                                    <input type="radio" name="genderS" value="2" x-model="formData.sec3.partnerGender" @change="validate('partnerGender')" class="mr-4"><label for="">Female (she/her)</label>
                                                 </div>
                                                 <div>
-                                                    <input type="radio" name="gender" value="3" x-model="formData.sec3.partnerGender" @change="validate('partnerGender')" class="mr-4"><label for="">Neutral (they/their)</label>
+                                                    <input type="radio" name="genderS" value="3" x-model="formData.sec3.partnerGender" @change="validate('partnerGender')" class="mr-4"><label for="">Neutral (they/their)</label>
                                                 </div>
                                                 <small x-text="validateError.partnerGender" class="text-red-500 block"></small>
                                             </div>
@@ -1158,11 +1156,7 @@ if (is_user_logged_in()) {
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div class="mb-2">
-                                                                <div class="mt-2">
-                                                                    <label for=""><span class="text-red-500">*</span> Full Name</label>
-                                                                    <input x-model="formData.sec4.beneficiaryDetails[childIndex].name" type="text">
-                                                                </div>
+                                                            <div class="mb-2">                                                                
                                                                 <div class="mt-2">
                                                                     <label for=""><span class="text-red-500">*</span> Relationship</label>
                                                                     <input x-model="formData.sec4.beneficiaryDetails[childIndex].relation" type="text">
@@ -1615,10 +1609,45 @@ if (is_user_logged_in()) {
                                                         <p class="mb-2">Trust:</p>
                                                         <div class="flex flex-col">                                                            
                                                             <div class="mb-2">
-                                                                <input type="radio" :name="'trust1'+childIndex" :id="'trust11'+childIndex" x-model="formData.sec8[childIndex].trust" value="1" class="mr-4"><label :for="'trust11'+childIndex">Do not create a trust for this beneficiary</label>                                                                
+                                                                <input type="radio" :name="'trust1'+childIndex" :id="'trust11'+childIndex" x-model="formData.sec8.youngBenefs[childIndex].trust" value="1" class="mr-4"><label :for="'trust11'+childIndex">Do not create a trust for this beneficiary</label>                                                                
                                                             </div>
                                                             <div class="mb-2">                                                                
-                                                                <input type="radio" :name="'trust1'+childIndex" :id="'trust12'+childIndex" x-model="formData.sec8[childIndex].trust" value="2" class="mr-4"><label :for="'trust12'+childIndex">Create a trust for this beneficiary, as follows:</label>
+                                                                <input type="radio" :name="'trust1'+childIndex" :id="'trust12'+childIndex" x-model="formData.sec8.youngBenefs[childIndex].trust" value="2" class="mr-4"><label :for="'trust12'+childIndex">Create a trust for this beneficiary, as follows:</label>
+                                                            </div>
+                                                            <div x-show="formData.sec8.youngBenefs[childIndex].trust==2" class="mb-2 bg-slate-50 ml-auto w-10/12 p-4">            
+                                                                <div class="mb-2">
+                                                                    <label class="font-bold" :for="'trust-age-expite-select'+childIndex">Age at which trust expires</label>
+                                                                    <select class="w-4/12 block" :id="'trust-age-expite-select'+childIndex" x-model="formData.sec8.youngBenefs[childIndex].expiryAge">
+                                                                        <template x-for="(item,index) in getExpiryAges()">                                                                        
+                                                                            <option :value="item" :selected="index+18 == formData.sec8.youngBenefs[childIndex].expiryAge" x-text="item"></option>
+                                                                        </template>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="mb-2 w-8/12">
+                                                                    <div class="flex flex-col">                                                            
+                                                                        <div class="mb-2">
+                                                                            <input type="radio" :name="'shareType1'+childIndex" :id="'shareType11'+childIndex" x-model="formData.sec8.youngBenefs[childIndex].shareType" value="1" class="mr-4"><label :for="'shareType11'+childIndex">Hold entire share until trust expires</label>                                                                
+                                                                        </div>
+                                                                        <div class="mb-2">                                                                
+                                                                            <input type="radio" :name="'shareType1'+childIndex" :id="'shareType12'+childIndex" x-model="formData.sec8.youngBenefs[childIndex].shareType" value="2" class="mr-4"><label :for="'shareType12'+childIndex">Release portions of the current value of the trust before the trust expires:</label>
+                                                                        </div>
+                                                                        <div class="mb-2">
+                                                                            <p class="mb-2">(use fractions such as 1/2 or 1/3)</p>
+                                                                            <div class="mb-2">
+                                                                                <label :for="'frac_'+childIndex" class="fint-bold">Fraction:</label>
+                                                                                <input type="text" :id="'frac_'+childIndex" x-model="formData.sec8.youngBenefs[childIndex].fraction">
+                                                                            </div>
+                                                                            <div class="mb-2">
+                                                                                <label class="font-bold" :for="'grantedAge-select'+childIndex">Age at which trust expires</label>
+                                                                                <select :id="'grantedAge-select'+childIndex" x-model="formData.sec8.youngBenefs[childIndex].ageGranted">
+                                                                                    <template x-for="(item,index) in getExpiryAges()">                                                                        
+                                                                                        <option :value="item" :selected="index+18 == formData.sec8.youngBenefs[childIndex].ageGranted" x-text="item"></option>
+                                                                                    </template>
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1628,8 +1657,47 @@ if (is_user_logged_in()) {
                                     </div>
                                     
                                 </div>
-                                <div x-show="activeForm === 'sec9'"></div>
-                                <div x-show="activeForm === 'sec10'"></div>
+                                <div x-show="activeForm === 'sec9'">
+                                    <div class="mb-2">
+                                        <h1 class="text-4xl text-blue-500">Forgive Debts</h1>                                            
+                                    </div>
+                                    <div class="mb-2">
+                                        <p class="mb-2">Is there anything specific owed to you that you wish to forgive or cancel at the time of your death?</p>
+                                        <p class="mb-2">If you have debts owed to you that you do not wish to forgive, they become part of your estate. After you complete your Will, you should include these in the "Personal Details & Assets" form located on the MyWill™ Main Menu.</p>
+                                    </div>
+                                    <div class="mb-2">
+                                        <!-- 'sec9' => ['forgive','forgiveDetails'], -->
+                                        <div class="flex flex-col">                                                            
+                                        <div class="mb-2">
+                                            <input type="radio" name="forgive1" id="forgive11" x-model="formData.sec9.forgive" value="1" class="mr-4"><label for="forgive11">No</label>                                                                
+                                        </div>
+                                        <div class="mb-2">                                                                
+                                            <input type="radio" name="forgive1" id="forgive12" x-model="formData.sec9.forgive" value="2" class="mr-4"><label for="forgive12">Yes, and the details are as follows:</label>
+                                        </div>
+                                        <div x-show="formData.sec9.forgive==2">
+                                            <label for="forgiveDetails">Description</label>
+                                            <textarea class="h-60 p-2 w-6/12 block" id="forgiveDetails" x-model="formData.sec9.forgiveDetails" placeholder="Enter detailed description"></textarea>
+                                        </div>
+                                        <div class="mb-2">                                                                
+                                            <input type="radio" name="forgive1" id="forgive13" x-model="formData.sec9.forgive" value="3" class="mr-4"><label for="forgive13">Undecided</label>
+                                        </div>
+                                    </div>
+                                    </div>
+                                </div>
+                                <div x-show="activeForm === 'sec10'">
+                                    <div class="mb-2">
+                                        <h1 class="text-4xl text-blue-500">Attachments</h1>                                            
+                                    </div>
+                                    <div class="mb-2">
+                                        <p class="mb-2">Check this box if you plan to store additional information with your Will, such as a document or letter providing additional instructions or other information.</p>                                        
+                                    </div>
+                                    <div class="mb-2 bg-slate-50 p-8 shadow">
+                                        <div>
+                                            <input class="mr-4" :checked="formData.sec10.attachement=='true'" x-model="formData.sec10.attachement" type="checkbox" id="attachements"><label for="attachements">I am going to attach an instruction to my Will</label>
+                                        </div>
+                                        <div><p>If you check this box, a clause will be inserted into your Will that references the existence of the document.</p></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1644,8 +1712,7 @@ if (is_user_logged_in()) {
 
         </div>
     </div>    
-    <script>
-        console.log(willsFormData);
+    <script>        
         document.addEventListener('alpine:init', () => {
             Alpine.data('data', () => ({
                 child: 0,
@@ -1678,11 +1745,8 @@ if (is_user_logged_in()) {
                 qna: {
                     home:{},createMod:{},
                     sec1: {
-                        'Question 1': 'Answer 1',
-                        'Question 2': 'Answer 2',
-                        'Question 3': 'Answer 3',
-                        'Question 4': 'Answer 4',
-                        'Question 5': 'Answer 5',
+                        'What if I have a question that isn\'t answered anywhere on the page?': 'No problem. Simply click on the \"CONTACT US\" link that appears in the menu at the top of each page. We\'d be happy to answer any questions that you have.\nBe sure to save your work by clicking the \"SAVE/EXIT\" button and creating an account, so that you can come back later to continue from where you left off.',
+                        'How do I get started?': 'It\'s easy! Just click the \"NEXT\" button at the bottom of the page.',                        
                     },
                     sec2: {
                         'Question 1': 'Answer 1',
@@ -1727,6 +1791,20 @@ if (is_user_logged_in()) {
                         'Question 5': 'Answer 5',
                     },
                     sec8: {
+                        'Question 1': 'Answer 1',
+                        'Question 2': 'Answer 2',
+                        'Question 3': 'Answer 3',
+                        'Question 4': 'Answer 4',
+                        'Question 5': 'Answer 5',
+                    },
+                    sec9: {
+                        'Question 1': 'Answer 1',
+                        'Question 2': 'Answer 2',
+                        'Question 3': 'Answer 3',
+                        'Question 4': 'Answer 4',
+                        'Question 5': 'Answer 5',
+                    },
+                    sec10: {
                         'Question 1': 'Answer 1',
                         'Question 2': 'Answer 2',
                         'Question 3': 'Answer 3',
@@ -1871,6 +1949,14 @@ if (is_user_logged_in()) {
                         }
                     }
                 },
+                getExpiryAges(){
+                    let ages = []
+                    for(let index=0;index<17;index++){
+                        if(index==0) ages.push('(Select Age)')
+                        else ages.push(index+18)
+                    }
+                    return ages
+                },
                 addChild(e){
                     this.formData.sec3.numChildren++
                     this.formData.sec3.childDetails.push({'name':'','relation':'','dob':''})
@@ -1997,24 +2083,25 @@ if (is_user_logged_in()) {
                 },
                 isYoungInfoRequrired(){
                     let temp = [1,2,3,4].includes(+(this.formData.sec7.possessionDist))
-                    let temp2 = [1].includes(+(this.formData.sec7.alterBenefProvisions.radio))                    
+                    let temp2 = [1].includes(+(this.formData.sec7.alterBenefProvisions.radio))
                     if(temp && temp2)
-                        return true   
-                    return false                 
+                        return true
+                    return false
                 },
                 getYoungBenfificiaries(){
                     let benefsDetails = this.formData.sec4.beneficiaryDetails
-                    let length = this.formData.sec8.length                    
+                    let length = this.formData.sec8.youngBenefs.length
+                    
                     if(length<benefsDetails.length){
-                        let youngBenefs = this.formData.sec8
-                        for(let i=0; i<benefsDetails.length-length;i++){                            
+                        let youngBenefs = this.formData.sec8.youngBenefs
+                        for(let i=0; i<benefsDetails.length-length;i++){
                             youngBenefs.push({"trust":1,"expiryAge":-1,"shareType":1,"fraction":"","ageGranted":-1,"fractionRemainder":"","atThisAge":-1})
                         }
-                        this.formData.sec8 = youngBenefs
+                        this.formData.sec8.youngBenefs = youngBenefs
                         return youngBenefs
                     }else {
-                        console.log('test2');
-                        return this.formData.sec8
+                        
+                        return this.formData.sec8.youngBenefs
                     }
                 },
                 validateError: {},
@@ -2023,12 +2110,12 @@ if (is_user_logged_in()) {
                     let rules;
                     if (this.checkSubSec.includes(this.activeForm)) {
                         rules = this.validateRules[this.activeForm][this.activeSubForm][inputName];
-                        // console.log(rules);
+                        // 
 
                     } else {
                         rules = this.validateRules[this.activeForm][inputName];
                     }
-                    // console.log(inputName);
+                    // 
                     const value = this.formData[this.activeForm][inputName].trim();
 
                     this.validateError[inputName] = '';
@@ -2280,7 +2367,7 @@ if (is_user_logged_in()) {
                         catch (err) {
                             console.log('Progress bar cannot be updated');
                         }                        
-                    },0)                    
+                    },0)
                     this.selectedOpt = this.activeForm // Update Select Section
                     // Check if it is a main form
                     if(this.isMainForm()) {

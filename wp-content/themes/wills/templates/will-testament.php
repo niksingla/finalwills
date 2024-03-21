@@ -123,8 +123,7 @@ if (is_user_logged_in()) {
         $will_data = validateWillsForm($will_data);        
     }else{
         $will_data = validateWillsForm($will_data);
-    }
-    
+    }    
 ?>
     <style>
             /* [x-cloak] {
@@ -751,17 +750,17 @@ if (is_user_logged_in()) {
                                                     </div>                                                    
                                                 </div>                                                
                                             </div>
-                                            <template x-for="(item,childIndex) in minorChildren">
+                                            <template x-for="(item,childIndex) in formData.sec5.guardianDetails">
                                                 <div class="flex justify-start gap-6 border-2">
                                                     <div class="w-4/12 p-4">
                                                         <div>
-                                                            <p x-text="item"></p>
+                                                            <p x-text="minorChildren[childIndex]"></p>
                                                         </div>                                                    
                                                     </div>
                                                     <div class="w-8/12 border-l-2 p-4">
                                                         <div>
                                                             <div>
-                                                                <input type="hidden" x-model="formData.sec5.guardianDetails[childIndex].childName">
+                                                                <input type="hidden" :value="minorChildren[childIndex]" x-model="formData.sec5.guardianDetails[childIndex].childName">
                                                                 <div>
                                                                     <label for="">Personal guardian's full name:</label>
                                                                     <input x-model="formData.sec5.guardianDetails[childIndex].name" type="text">
@@ -2167,6 +2166,8 @@ if (is_user_logged_in()) {
                         case 'createMod':
                             this.activeForm = 'createMod';
                             break;                        
+                        case 'view':
+                            window.location = 'view-will'
                         default:
                             this.activeForm = 'home';
                             break;
@@ -2378,8 +2379,7 @@ if (is_user_logged_in()) {
 
                     // Check if WIll holder is having any living minor child/grandchild for section 5
                     if(this.activeForm=='sec5'){                        
-                        if(this.hasMinorChild()) {
-                            console.log(this.minorChildren)
+                        if(this.hasMinorChild()) {                            
                         }
                         if(this.formData.sec5.guardianDetails.length < this.minorChildren.length) this.extendGuardianFields(this.formData.sec5.guardianDetails.length)
                     } else if(this.activeForm=='sec7' && this.activeSubForm=='possessionsDist'){

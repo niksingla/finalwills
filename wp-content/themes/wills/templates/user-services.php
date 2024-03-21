@@ -72,7 +72,7 @@ if(is_user_logged_in()){
                     <p>Create a perfect, lawyer-approved legal Will from the comfort of your home.</p>
                     <div class="try-buy-btns">
                     <a class="btn btn-dark extend-plan px-3" href="/will-testament/">TRY</a>
-                    <a class="btn btn-dark extend-plan px-3" href="#">BUY ($39.95)</a>
+                    <a class="btn btn-dark extend-plan px-3 d-none" href="#">BUY ($39.95)</a>
                     </div>
                 </div>                
             </div>

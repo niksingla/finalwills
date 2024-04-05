@@ -140,7 +140,7 @@ if (is_user_logged_in()) {
     <!-- Code here -->
     <script>
         const willsFormData = <?php echo json_encode($will_data); ?>;
-        console.log(willsFormData);        
+        // console.log(willsFormData);        
     </script>
     <div x-data="data" x-init="updateState();" class="w-full">
         <div x-cloak>
@@ -1696,6 +1696,9 @@ if (is_user_logged_in()) {
                                         </div>
                                         <div><p>If you check this box, a clause will be inserted into your Will that references the existence of the document.</p></div>
                                     </div>
+                                    <div class="mb-2 bg-slate-50 p-8 shadow">
+
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1712,6 +1715,24 @@ if (is_user_logged_in()) {
         </div>
     </div>    
     <script>        
+        var canCreate = true
+        function updateNumViews() {
+            url = "<?= admin_url('admin-ajax.php'); ?>"
+            jQuery.ajax({
+                type : "post",                        
+                url : url,
+                data : {action: "updateNumViews"},
+                success: function(response) {
+                    if(response.success) {
+                        canCreate = true
+                    }
+                    else if(response.success==false) {
+                        canCreate = false
+                        alert("Cannot create or modify will more than 5 times.");                         
+                    }
+                }
+            })
+        }
         document.addEventListener('alpine:init', () => {
             Alpine.data('data', () => ({
                 child: 0,
@@ -2161,24 +2182,29 @@ if (is_user_logged_in()) {
                     return emailRegex.test(email);
                 },
 
-                openPage(pageName) {
+                async openPage(pageName) {
                     switch (pageName) {
                         case 'createMod':
-                            this.activeForm = 'createMod';
+                            // await updateNumViews()
+                            // console.log(canCreate)
+                            if(canCreate){
+                                this.activeForm = 'createMod';
+                            } else {
+                                this.activeForm = 'home';
+                            }
                             break;                        
                         case 'view':
                             window.location = 'view-will'
                         default:
-                            this.activeForm = 'home';
+                            this.activeForm = 'home';                            
                             break;
                     }
                     if(pageName.includes('sec')){
                         this.activeForm = pageName;
-                        this.mainForm = true;    
-                        this.updateState()                    
+                        this.mainForm = true;
+                        this.updateState()
                     }
-                },
-
+                },                
                 selectChanged(e) {
                     if (this.validateOnSubmit()) {                        
                         let page = e.target.value;

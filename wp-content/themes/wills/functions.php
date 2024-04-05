@@ -33,3 +33,23 @@ function update_form_data(){
 }
 add_action('wp_ajax_update_form_data','update_form_data');
 
+function updateNumViews(){
+	$user_id = get_current_user_id();
+	if($user_id){
+		$current_val = get_user_meta($user_id,'numViews',true);
+		if(empty($current_val) || !isset($current_val)){
+			update_user_meta($user_id,'numViews',1);
+		} else if($current_val >= 5){
+			wp_send_json_error();
+			die();	
+		} else {
+			update_user_meta($user_id,'numViews',++$current_val);
+		}
+		wp_send_json_success(['current'=>$current_val]);
+		die();
+	}else{
+		wp_send_json_error();
+		die();
+	}
+}
+add_action('wp_ajax_updateNumViews','updateNumViews');
